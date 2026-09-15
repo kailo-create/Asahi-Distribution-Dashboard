@@ -4,7 +4,7 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="description" content="菜蟲農食 × Asahi Zero-Sugar Health Channel Opportunity Engine">
   <title>Asahi Zero-Sugar Channel Command Center</title>
-  <link rel="stylesheet" href="style.css?v=attack-list-v11">
+  <link rel="stylesheet" href="style.css?v=sync-v12">
 </head>
 <body>
 <header class="topbar">
@@ -39,8 +39,16 @@
 
   <section class="panel import-panel">
     <div class="panel-header"><div><p class="eyebrow">Data foundation</p><h2>原始資料與 Qualification</h2><p class="subtext">保留原始客戶總表；人工補充資料儲存在本機瀏覽器，CSV 重新匯入會依客戶名稱合併。</p></div>
-      <div class="toolbar"><label class="file-button" for="csv-file">匯入 CSV</label><input id="csv-file" type="file" accept=".csv,text/csv" hidden><button id="export-csv" class="secondary">Export CSV</button><button id="reset-data" class="secondary">重新載入客戶總表</button></div>
-    </div><div id="import-status" class="notice" role="status" aria-live="polite"></div><div class="source-meta"><span>資料來源：<b id="source-label">Google Sheet</b></span><span>最後更新：<b id="last-updated">—</b></span></div><div id="empty-state" class="empty-state" hidden><strong>目前沒有可用客戶資料</strong><span id="empty-state-message">請重新載入客戶總表，或匯入 CSV。</span><div><button id="empty-reload" class="secondary">重新載入客戶總表</button><label class="file-button" for="csv-file">匯入 CSV</label></div></div>
+      <div class="toolbar"><button id="sync-daily" class="secondary">同步每日資料</button><button id="source-settings-toggle" class="secondary">資料來源設定</button><label class="file-button" for="csv-file">匯入 CSV</label><input id="csv-file" type="file" accept=".csv,text/csv" hidden><button id="export-csv" class="secondary">Export CSV</button><button id="reset-data" class="secondary">重新載入客戶總表</button></div>
+    </div>
+    <div id="source-settings" class="source-settings" hidden>
+      <div><span>來源名稱：</span><b id="source-settings-name">每日 Apps Script 資料源</b></div>
+      <div><span>主要來源：</span><code id="source-settings-url">-</code></div>
+      <div><span>備援來源：</span><code id="source-settings-fallback">Google Sheet CSV Export</code></div>
+    </div>
+    <div id="sync-status" class="notice" role="status" aria-live="polite" hidden></div>
+    <div class="sync-meta"><span>同步來源：<b id="sync-source-name">—</b></span><span>最後同步：<b id="sync-last-time">—</b></span><span>載入筆數：<b id="sync-count">—</b></span><span>新增：<b id="sync-added">—</b></span><span>更新：<b id="sync-updated">—</b></span><span>無法匹配：<b id="sync-unmatched">—</b></span></div>
+    <div id="import-status" class="notice" role="status" aria-live="polite"></div><div class="source-meta"><span>資料來源：<b id="source-label">Google Sheet</b></span><span>最後更新：<b id="last-updated">—</b></span></div><div id="empty-state" class="empty-state" hidden><strong>目前沒有可用客戶資料</strong><span id="empty-state-message">請重新載入客戶總表，或匯入 CSV。</span><div><button id="empty-sync" class="secondary">同步每日資料</button><button id="empty-reload" class="secondary">重新載入客戶總表</button><label class="file-button" for="csv-file">匯入 CSV</label></div></div>
   </section>
 
   <section class="panel next-actions-panel">
@@ -70,5 +78,5 @@
   <section class="panel model-note"><div class="panel-header"><div><p class="eyebrow">Qualification workflow</p><h2>Data model V1</h2><p class="subtext">Unknown 不等於 0；資料不足會顯示 Needs Qualification，未臆測酒類、決策者或營運條件。</p></div><span class="strategy-badge">Raw → Qualification → Calculated</span></div></section>
 </main>
 <aside id="detail-drawer" class="drawer" aria-hidden="true"><button id="drawer-close" class="drawer-close" aria-label="Close">×</button><div id="drawer-content"></div></aside><div id="drawer-backdrop" class="drawer-backdrop"></div>
-<script src="dashboard.js?v=attack-list-v11"></script>
+<script src="dashboard.js?v=sync-v12"></script>
 </body></html>
