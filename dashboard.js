@@ -29,11 +29,46 @@ function renderTable() {
  let rows=records.filter(r=>Object.values(r).join(' ').toLowerCase().includes(q)).filter(r=>!region||r['區域／類型']===region).filter(r=>!tier||r['等級']===tier).filter(r=>!category||r['追蹤分類']===category).filter(r=>!pf||(pf==='strategic'?r.strategic:pf==='opportunity'?r.asahiOpportunity:pf==='high'?r.score>=70:pf==='medium'?r.score>=40&&r.score<70:r.score<40));
  rows.sort((a,b)=>sort==='name'?a['追蹤對象'].localeCompare(b['追蹤對象'],'zh'):sort==='revenue'?b.revenue-a.revenue:sort==='kg'?b.kg-a.kg:sort==='stores'?b.stores-a.stores:sort==='recent'?b.recent-a.recent:b.score-a.score);
  const body=$('customer-table'); body.replaceChildren();
- rows.forEach(r=>{const tr=document.createElement('tr'); text(tr,r['追蹤對象'],'strong'); text(tr,r['追蹤分類']);text(tr,r['區域／類型']);text(tr,r['等級']);text(tr,r['門店']);text(tr,r['近12月M']);text(tr,r['近12月kg']);text(tr,r['元/kg']);text(tr,r['近30天']);text(tr,r['歷史最大月營收']);
-  text(tr,`${r.strategic?'🔥 ':r.asahiOpportunity?'⭐ ':''}${r.score} · ${r.band}`,'span',`score ${r.score>=70?'high':r.score>=40?'medium':'low'}`); text(tr,r.mapping,'span',`mapping-tag ${r.opportunity?'opportunity':'neutral'}`); text(tr,r.pilot,'span',`status ${r.pilot==='候選'||r.pilot==='優先候選'?'pending':'delivered'}`); const btn=document.createElement('button');btn.className='link-button';btn.textContent='詳情';btn.addEventListener('click',()=>openDrawer(r));tr.appendChild(btn); body.appendChild(tr);});
+ rows.forEach(r=>{
+  const tr=document.createElement('tr');
+  const cell=(value, tag='span', cls='')=>{const td=document.createElement('td');text(td,value,tag,cls);tr.appendChild(td);};
+  cell(r['追蹤對象'],'strong');
+  cell(r['追蹤分類']);
+  cell(r['區域／類型']);
+  cell(r['等級']);
+  cell(r['門店']);
+  cell(r['近12月M']);
+  cell(r['近12月kg']);
+  cell(r['元/kg']);
+  cell(r['近30天']);
+  cell(r['歷史最大月營收']);
+  cell(`${r.strategic?'🔥 ':r.asahiOpportunity?'⭐ ':''}${r.score} · ${r.band}`,'span',`score ${r.score>=70?'high':r.score>=40?'medium':'low'}`);
+  cell(r.mapping,'span',`mapping-tag ${r.opportunity?'opportunity':'neutral'}`);
+  cell(r.pilot,'span',`status ${r.pilot==='候選'||r.pilot==='優先候選'?'pending':'delivered'}`);
+  const action=document.createElement('td');
+  const btn=document.createElement('button');
+  btn.className='link-button';
+  btn.textContent='詳情';
+  btn.addEventListener('click',()=>openDrawer(r));
+  action.appendChild(btn);
+  tr.appendChild(action);
+  body.appendChild(tr);
+ });
 }
 function renderTargets() {}
-function bars(id,key) { const box=$(id);box.replaceChildren();const map={};records.forEach(r=>{const k=r[key]||'未填寫'; if(!map[k])map[k]={count:0,revenue:0,kg:0,score:0}; map[k].count++;map[k].revenue+=r.revenue;map[k].kg+=r.kg;map[k].score+=r.score;});const max=Math.max(...Object.values(map).map(v=>v.count),1);Object.entries(map).sort((a,b)=>b[1].count-a[1].count).forEach(([label,v])=>{const row=document.createElement('div');row.className='bar-row';text(row,`${label} · ${v.count}戶`);const bar=document.createElement('i');bar.style.setProperty('--value',`${v.count/max*100}%`);text(bar,`營收 ${v.revenue.toLocaleString()} · kg ${v.kg.toLocaleString()} · 平均分 ${Math.round(v.score/v.count)}`,'b');row.appendChild(bar);box.appendChild(row);});}
+function bars(id,key) {
+ const box=$(id);box.replaceChildren();const map={};
+ records.forEach(r=>{const k=r[key]||'未填寫';if(!map[k])map[k]={count:0,revenue:0,kg:0,score:0};map[k].count++;map[k].revenue+=r.revenue;map[k].kg+=r.kg;map[k].score+=r.score;});
+ const max=Math.max(...Object.values(map).map(v=>v.count),1);
+ Object.entries(map).sort((a,b)=>b[1].count-a[1].count).forEach(([label,v])=>{
+  const row=document.createElement('div');row.className='bar-row';
+  text(row,`${label} · ${v.count}戶`,'span','bar-label');
+  const visual=document.createElement('div');visual.className='bar-visual';
+  const bar=document.createElement('i');bar.style.setProperty('--value',`${v.count/max*100}%`);visual.appendChild(bar);
+  text(visual,`營收 ${v.revenue.toLocaleString()} · kg ${v.kg.toLocaleString()} · 平均分 ${Math.round(v.score/v.count)}`,'b','bar-value');
+  row.appendChild(visual);box.appendChild(row);
+ });
+}
 function renderMatrix(){const box=$('value-matrix');box.querySelectorAll('.dot').forEach(e=>e.remove());records.forEach(r=>{const d=document.createElement('button');d.className=`dot ${r.band.toLowerCase()}`;d.title=`${r['追蹤對象']} · ${r.score}`;d.style.left=`${Math.min(94,8+r._n.revenue(r)*84)}%`;d.style.bottom=`${Math.min(88,8+r._n.recent(r)*76)}%`;d.addEventListener('click',()=>openDrawer(r));box.appendChild(d);});}
 function insight(r){const signal=r.recent>=7?'近期互動活躍，適合立即安排試飲與採購會議。':r.recent<=2?'近期互動偏低，先以需求訪談與樣品喚回。':'有穩定活動，可用小批量 Pilot 驗證。';return `${r['追蹤對象']} 位於${r['區域／類型']}，近12月營收 ${r['近12月M']||'未填'}、${r['近12月kg']||'未填'} kg。${signal} 建議由區域業務確認門店與商務條件，並追蹤 Mapping → Pilot → Listing。`;}
 function openDrawer(r){const c=$('drawer-content');c.replaceChildren();text(c,r['追蹤對象'],'h2');text(c,`${r['追蹤分類']} · ${r['區域／類型']}`,'p','subtext');text(c,`Pilot Priority Score ${r.score}/100 (${r.band})`,'div','drawer-score');text(c,'Commercial Insight','h3');text(c,insight(r),'p');const dl=document.createElement('dl');[['近12月M',r['近12月M']],['近12月kg',r['近12月kg']],['元/kg',r['元/kg']],['近30天',r['近30天']],['歷史最大月營收',r['歷史最大月營收']],['門店',r['門店']]].forEach(([k,v])=>{text(dl,k,'dt');text(dl,v||'—','dd');});c.appendChild(dl);$('detail-drawer').classList.add('open');$('detail-drawer').setAttribute('aria-hidden','false');$('drawer-backdrop').classList.add('open');}
