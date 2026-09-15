@@ -1,41 +1,48 @@
-const channels = [
-  ['台北城市商旅', '台灣啤酒', '北區', '飯店', '未覆蓋缺口', '進行中', '低', '北區業務', '安排產品試飲'],
-  ['台中宴會會館', '', '中區', '飯店宴會', '菜蟲獨有新通路', '候選', '低', '中區業務', '確認宴會採購規格'],
-  ['高雄海鮮餐廳', 'Kirin', '南區', '中餐', '供應中斷', '候選', '中', '南區業務', '確認月採購量'],
-  ['健康食光餐飲', '', '北區', '健康餐', '未覆蓋缺口', '待啟動', '低', '北區業務', '寄送 Dry Zero 試飲'],
-  ['既有日式連鎖', 'Asahi', '中區', '連鎖餐飲', '既有經銷商覆蓋', '排除', '高', '中區業務', '暫不開發'],
+/* Static customer intelligence model. CSV values are always rendered with textContent. */
+const HEADERS = ['追蹤對象','追蹤分類','區域／類型','等級','門店','近12月M','近12月kg','元/kg','近30天','歷史最大月營收'];
+const SAMPLE = [
+ ['台北城市商旅','未覆蓋缺口','北區／飯店','A','12','185000','920','201','8','230000'],
+ ['台中宴會會館','菜蟲獨有新通路','中區／飯店宴會','A','6','142000','710','200','6','160000'],
+ ['高雄海鮮餐廳','供應中斷','南區／中餐','B','4','98000','560','175','3','140000'],
+ ['健康食光餐飲','未覆蓋缺口','北區／健康餐','B','9','76000','390','195','9','110000'],
+ ['既有日式連鎖','既有經銷商覆蓋','中區／連鎖餐飲','A','28','310000','1450','214','12','360000'],
+ ['台南老字號餐廳','菜蟲獨有新通路','南區／中餐','C','3','42000','260','162','2','68000'],
+ ['桃園商務會館','未覆蓋缺口','北區／飯店','B','5','112000','520','215','5','130000']
 ];
-const translations = {
-  title: ['Asahi 通路合作 Dashboard', 'Asahi Channel Dashboard'], status: ['Pilot execution', 'Pilot execution'],
-  print: ['列印簡報', 'Print brief'], eyebrow: ['Executive overview', 'Executive overview'],
-  heroTitle: ['活用 IoT 冷鏈物流，切入中餐與飯店藍海通路', 'Use IoT cold-chain logistics to unlock hotel and dining channels'],
-  heroCopy: ['以 Mapping 先行、Pilot 驗證、商務條件複製，建立 Asahi 的增量通路引擎。', 'Map first, validate with pilots, then scale Asahi incremental channels.'],
-  pilotTarget: ['Pilot 目標客戶', 'Pilot target accounts'], accounts: ['Channel accounts', 'Channel accounts'],
-  uncovered: ['Uncovered', 'Uncovered'], opportunities: ['Incremental opportunities', 'Incremental opportunities'],
-  inProgress: ['In progress', 'In progress'], riskAlerts: ['Risk alerts', 'Risk alerts'], needReview: ['Need review', 'Need review'],
-  funnelTitle: ['通路轉換進度', 'Channel conversion'], regionTitle: ['區域機會分布', 'Regional opportunities'],
-  mappingTitle: ['新增通路與 Pilot 管理', 'Channel and Pilot management'], search: ['搜尋客戶或區域', 'Search customer or region'],
-  customer: ['客戶', 'Customer'], region: ['區域', 'Region'], channel: ['通路', 'Channel'], risk: ['風險', 'Risk'],
-  owner: ['負責人', 'Owner'], next: ['下一步', 'Next step'], categories: ['通路 Mapping 五分類', 'Five mapping categories'],
-  roadmap: ['三階段落地', 'Three phases'], guardrail: ['合作防線', 'Guardrails'],
-  briefTitle: ['把冷鏈配送變成 Asahi 的增量通路引擎', 'Turn cold-chain delivery into Asahi incremental growth'],
-  briefCopy: ['先完成客戶 Mapping，再以 5–10 家 Pilot 驗證產品、配送與商務條件，最後建立可複製的正式分銷模式。', 'Map accounts, validate products and delivery with 5–10 pilots, then scale a repeatable distribution model.'],
-};
-let language = 0;
-const $ = (id) => document.getElementById(id);
-function render() {
-  const query = ($('channel-search').value || '').toLowerCase();
-  const rows = channels.filter((c) => c.join('').toLowerCase().includes(query));
-  $('channel-table').innerHTML = rows.map((c) => `<tr><td><strong>${c[0]}</strong><small class="subtext">${c[1] || '尚無品牌資料'}</small></td><td>${c[2]}</td><td>${c[3]}</td><td><span class="mapping-tag ${['未覆蓋缺口','菜蟲獨有新通路'].includes(c[4]) ? 'opportunity' : 'neutral'}">${c[4]}</span></td><td><span class="status ${c[5] === '進行中' ? 'shipped' : c[5] === '排除' ? 'delivered' : 'pending'}">${c[5]}</span></td><td><span class="risk ${c[6]}">${c[6]}</span></td><td>${c[7]}</td><td>${c[8]}</td></tr>`).join('');
+let records = [], language = 0;
+const $ = id => document.getElementById(id);
+const num = v => { const n = Number(String(v ?? '').replace(/[,，$￥\s]/g,'')); return Number.isFinite(n) ? n : 0; };
+function model(row) {
+ const r = {}; HEADERS.forEach((h,i) => r[h] = String(row[i] ?? '').trim());
+ r.revenue=num(r['近12月M']); r.kg=num(r['近12月kg']); r.price=num(r['元/kg']); r.recent=num(r['近30天']); r.maxRevenue=num(r['歷史最大月營收']); r.stores=num(r['門店']);
+ return r;
 }
-function translate() {
-  document.querySelectorAll('[data-i18n]').forEach((el) => { const value = translations[el.dataset.i18n]; if (value) el.textContent = value[language]; });
-  document.querySelectorAll('[data-i18n-placeholder]').forEach((el) => { const value = translations[el.dataset.i18nPlaceholder]; if (value) el.placeholder = value[language]; });
-  $('language-toggle').textContent = language ? '中' : 'EN';
+function normalize(key) { const vals=records.map(r=>r[key]); const min=Math.min(...vals), max=Math.max(...vals); return r=>max===min?50:(r[key]-min)/(max-min)*100; }
+function score(r) { const weights=[['revenue',25],['kg',20],['maxRevenue',20],['recent',15],['tierScore',10],['stores',10]]; return weights.reduce((s,[k,w])=>s+(k==='tierScore'?r.tierScore:r._n[k](r))*w/100,0); }
+function calculate() {
+ const norms={revenue:normalize('revenue'),kg:normalize('kg'),maxRevenue:normalize('maxRevenue'),recent:normalize('recent'),stores:normalize('stores')};
+ records.forEach(r=>{r.tierScore={A:100,B:65,C:30}[r['等級']]??(num(r['等級'])||50);r._n=norms;r.score=Math.round(score(r));r.band=r.score>=70?'Priority 1':r.score>=40?'Priority 2':'Priority 3';const cat=r['追蹤分類'];r.opportunity=['未覆蓋缺口','菜蟲獨有新通路','供應中斷'].includes(cat);r.asahiOpportunity=r.score>=70&&['未覆蓋缺口','菜蟲獨有新通路'].includes(cat);r.strategic=r.score>=85;r.mapping=cat||'待分類';r.pilot=cat==='供應中斷'?'候選':r.score>=70?'優先候選':'待啟動';});
 }
-document.addEventListener('DOMContentLoaded', () => {
-  render();
-  $('channel-search').addEventListener('input', render);
-  $('print-button').addEventListener('click', () => window.print());
-  $('language-toggle').addEventListener('click', () => { language = language ? 0 : 1; translate(); });
-});
+function text(parent, value, tag='span', cls='') { const el=document.createElement(tag); if(cls)el.className=cls; el.textContent=value; parent.appendChild(el); return el; }
+function populateFilters() { [['region-filter','區域／類型'],['tier-filter','等級'],['category-filter','追蹤分類']].forEach(([id,key])=>{const select=$(id), current=select.value; select.replaceChildren(); text(select,'所有選項','option'); [...new Set(records.map(r=>r[key]).filter(Boolean))].sort().forEach(v=>text(select,v,'option')); select.value=current;}); }
+function renderTable() {
+ const q=($('channel-search').value||'').toLowerCase(), pf=$('priority-filter').value, sort=$('sort-select').value;
+ const region=$('region-filter').value, tier=$('tier-filter').value, category=$('category-filter').value;
+ let rows=records.filter(r=>Object.values(r).join(' ').toLowerCase().includes(q)).filter(r=>!region||r['區域／類型']===region).filter(r=>!tier||r['等級']===tier).filter(r=>!category||r['追蹤分類']===category).filter(r=>!pf||(pf==='strategic'?r.strategic:pf==='opportunity'?r.asahiOpportunity:pf==='high'?r.score>=70:pf==='medium'?r.score>=40&&r.score<70:r.score<40));
+ rows.sort((a,b)=>sort==='name'?a['追蹤對象'].localeCompare(b['追蹤對象'],'zh'):sort==='revenue'?b.revenue-a.revenue:sort==='kg'?b.kg-a.kg:sort==='stores'?b.stores-a.stores:sort==='recent'?b.recent-a.recent:b.score-a.score);
+ const body=$('customer-table'); body.replaceChildren();
+ rows.forEach(r=>{const tr=document.createElement('tr'); text(tr,r['追蹤對象'],'strong'); text(tr,r['追蹤分類']);text(tr,r['區域／類型']);text(tr,r['等級']);text(tr,r['門店']);text(tr,r['近12月M']);text(tr,r['近12月kg']);text(tr,r['元/kg']);text(tr,r['近30天']);text(tr,r['歷史最大月營收']);
+  text(tr,`${r.strategic?'🔥 ':r.asahiOpportunity?'⭐ ':''}${r.score} · ${r.band}`,'span',`score ${r.score>=70?'high':r.score>=40?'medium':'low'}`); text(tr,r.mapping,'span',`mapping-tag ${r.opportunity?'opportunity':'neutral'}`); text(tr,r.pilot,'span',`status ${r.pilot==='候選'||r.pilot==='優先候選'?'pending':'delivered'}`); const btn=document.createElement('button');btn.className='link-button';btn.textContent='詳情';btn.addEventListener('click',()=>openDrawer(r));tr.appendChild(btn); body.appendChild(tr);});
+}
+function renderTargets() { const box=$('target-cards');box.replaceChildren(); records.slice().sort((a,b)=>b.score-a.score).slice(0,10).forEach(r=>{const card=document.createElement('button');card.className='target-card';card.addEventListener('click',()=>openDrawer(r));text(card,r['追蹤對象'],'strong');text(card,`${r.strategic?'🔥 ':r.asahiOpportunity?'⭐ ':''}${r.score} ${r.band}`,'span',`score ${r.score>=70?'high':r.score>=40?'medium':'low'}`);text(card,`${r['區域／類型']} · ${r['追蹤分類']}`,'small');text(card,`${r['門店']||0} 店 · ${r['近12月M']||0} · ${r['近12月kg']||0} kg`,'small');box.appendChild(card);}); $('score-band-summary').textContent=`${records.filter(r=>r.score>=70).length} High priority`; }
+function bars(id,key) { const box=$(id);box.replaceChildren();const map={};records.forEach(r=>{const k=r[key]||'未填寫'; if(!map[k])map[k]={count:0,revenue:0,kg:0,score:0}; map[k].count++;map[k].revenue+=r.revenue;map[k].kg+=r.kg;map[k].score+=r.score;});const max=Math.max(...Object.values(map).map(v=>v.count),1);Object.entries(map).sort((a,b)=>b[1].count-a[1].count).forEach(([label,v])=>{const row=document.createElement('div');row.className='bar-row';text(row,`${label} · ${v.count}戶`);const bar=document.createElement('i');bar.style.setProperty('--value',`${v.count/max*100}%`);text(bar,`營收 ${v.revenue.toLocaleString()} · kg ${v.kg.toLocaleString()} · 平均分 ${Math.round(v.score/v.count)}`,'b');row.appendChild(bar);box.appendChild(row);});}
+function renderMatrix(){const box=$('value-matrix');box.querySelectorAll('.dot').forEach(e=>e.remove());records.forEach(r=>{const d=document.createElement('button');d.className=`dot ${r.band.toLowerCase()}`;d.title=`${r['追蹤對象']} · ${r.score}`;d.style.left=`${Math.min(94,8+r._n.revenue(r)*84)}%`;d.style.bottom=`${Math.min(88,8+r._n.recent(r)*76)}%`;d.addEventListener('click',()=>openDrawer(r));box.appendChild(d);});}
+function insight(r){const signal=r.recent>=7?'近期互動活躍，適合立即安排試飲與採購會議。':r.recent<=2?'近期互動偏低，先以需求訪談與樣品喚回。':'有穩定活動，可用小批量 Pilot 驗證。';return `${r['追蹤對象']} 位於${r['區域／類型']}，近12月營收 ${r['近12月M']||'未填'}、${r['近12月kg']||'未填'} kg。${signal} 建議由區域業務確認門店與商務條件，並追蹤 Mapping → Pilot → Listing。`;}
+function openDrawer(r){const c=$('drawer-content');c.replaceChildren();text(c,r['追蹤對象'],'h2');text(c,`${r['追蹤分類']} · ${r['區域／類型']}`,'p','subtext');text(c,`Pilot Priority Score ${r.score}/100 (${r.band})`,'div','drawer-score');text(c,'Commercial Insight','h3');text(c,insight(r),'p');const dl=document.createElement('dl');[['近12月M',r['近12月M']],['近12月kg',r['近12月kg']],['元/kg',r['元/kg']],['近30天',r['近30天']],['歷史最大月營收',r['歷史最大月營收']],['門店',r['門店']]].forEach(([k,v])=>{text(dl,k,'dt');text(dl,v||'—','dd');});c.appendChild(dl);$('detail-drawer').classList.add('open');$('detail-drawer').setAttribute('aria-hidden','false');$('drawer-backdrop').classList.add('open');}
+function closeDrawer(){$('detail-drawer').classList.remove('open');$('detail-drawer').setAttribute('aria-hidden','true');$('drawer-backdrop').classList.remove('open');}
+function render(){calculate();populateFilters();$('metric-customers').textContent=records.length;$('metric-priority').textContent=records.filter(r=>r.score>=70).length;$('metric-pilot').textContent=records.filter(r=>r.pilot==='候選'||r.pilot==='優先候選').length;$('metric-revenue').textContent=records.reduce((s,r)=>s+r.revenue,0).toLocaleString();$('metric-kg').textContent=records.reduce((s,r)=>s+r.kg,0).toLocaleString();$('metric-active').textContent=records.filter(r=>r.recent>0).length;$('metric-potential').textContent=records.reduce((s,r)=>s+r.maxRevenue,0).toLocaleString();$('metric-opportunities').textContent=records.filter(r=>r.asahiOpportunity).length;renderTable();renderTargets();bars('region-chart','區域／類型');bars('category-chart','追蹤分類');renderMatrix();}
+function parseCSV(input){const rows=[];let row=[],cell='',quoted=false;for(let i=0;i<input.length;i++){const ch=input[i],next=input[i+1];if(ch==='"'&&quoted&&next==='"'){cell+='"';i++;}else if(ch==='"')quoted=!quoted;else if(ch===','&&!quoted){row.push(cell);cell='';}else if((ch==='\n'||ch==='\r')&&!quoted){if(ch==='\r'&&next==='\n')i++;row.push(cell);if(row.some(v=>v.trim()))rows.push(row);row=[];cell='';}else cell+=ch;}if(cell||row.length){row.push(cell);rows.push(row);}return rows;}
+function importCSV(file){const reader=new FileReader();reader.onload=()=>{try{const rows=parseCSV(String(reader.result).replace(/^\uFEFF/,'')),header=rows.shift()?.map(v=>v.trim());if(!header||HEADERS.some(h=>!header.includes(h)))throw Error('欄位標題不完整');const ix=HEADERS.map(h=>header.indexOf(h));records=rows.map(row=>model(ix.map(i=>row[i]??''))).filter(r=>r['追蹤對象']);$('import-status').textContent=`已匯入 ${records.length} 筆客戶資料`;render();}catch(e){$('import-status').textContent=`匯入失敗：${e.message}`;}};reader.readAsText(file);}
+const translations={title:['Asahi 客戶情報 Dashboard','Asahi Customer Intelligence Dashboard'],status:['Pilot execution','Pilot execution'],print:['列印簡報','Print brief'],eyebrow:['Executive overview','Executive overview'],heroTitle:['活用 IoT 冷鏈物流，切入中餐與飯店藍海通路','Use IoT cold-chain logistics to unlock hotel and dining channels'],heroCopy:['以 Mapping 先行、Pilot 驗證、商務條件複製，建立 Asahi 的增量通路引擎。','Map first, validate with pilots, then scale Asahi incremental channels.'],pilotTarget:['Pilot 目標客戶','Pilot target accounts'],kpiCustomers:['客戶總數','Customers'],kpiOpportunity:['Opportunity','Opportunity'],kpiPilot:['Pilot','Pilot'],kpiPriority:['高優先級','High priority'],importTitle:['匯入客戶 CSV','Import customer CSV'],importHint:['支援精確中文欄位；空白、0、文字與數字均可安全處理。','Exact Chinese headers; blanks, zeroes, text and numbers are handled safely.'],importButton:['選擇 CSV 檔案','Choose CSV'],reset:['還原範例','Restore sample'],targetsTitle:['Top 10 Pilot target cards','Top 10 Pilot target cards'],matrixTitle:['價值矩陣（營收 × 近30天）','Value matrix (revenue × recent activity)'],regionTitle:['區域機會分布','Regional opportunities'],categoryTitle:['追蹤分類分析','Tracking category analysis'],tableTitle:['客戶資料與 Pilot 管理','Customer and Pilot management'],search:['搜尋客戶、門店或區域','Search customer, store or region'],categories:['通路 Mapping 五分類','Five mapping categories'],roadmap:['三階段落地','Three phases'],guardrail:['合作防線','Guardrails'],briefTitle:['把冷鏈配送變成 Asahi 的增量通路引擎','Turn cold-chain delivery into Asahi incremental growth'],briefCopy:['先完成客戶 Mapping，再以 5–10 家 Pilot 驗證產品、配送與商務條件，最後建立可複製的正式分銷模式。','Map accounts, validate products and delivery with 5–10 pilots, then scale a repeatable distribution model.']};
+function translate(){document.querySelectorAll('[data-i18n]').forEach(e=>{const v=translations[e.dataset.i18n];if(v)e.textContent=v[language];});document.querySelectorAll('[data-i18n-placeholder]').forEach(e=>{const v=translations[e.dataset.i18nPlaceholder];if(v)e.placeholder=v[language];});$('language-toggle').textContent=language?'中':'EN';}
+document.addEventListener('DOMContentLoaded',()=>{records=SAMPLE.map(model);render();$('channel-search').addEventListener('input',renderTable);['priority-filter','region-filter','tier-filter','category-filter','sort-select'].forEach(id=>$(id).addEventListener('change',renderTable));$('csv-file').addEventListener('change',e=>e.target.files[0]&&importCSV(e.target.files[0]));$('reset-data').addEventListener('click',()=>{records=SAMPLE.map(model);$('import-status').textContent='已還原範例資料';render();});$('print-button').addEventListener('click',()=>window.print());$('language-toggle').addEventListener('click',()=>{language=language?0:1;translate();});$('drawer-close').addEventListener('click',closeDrawer);$('drawer-backdrop').addEventListener('click',closeDrawer);});
