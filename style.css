@@ -38,6 +38,144 @@ select {
   padding: 32px 56px 18px;
 }
 
+.app-header {
+  padding-top: 26px;
+}
+
+.brand,
+.header-actions,
+.toolbar,
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  background: var(--primary);
+  color: white;
+  font-weight: 800;
+  font-size: 1.35rem;
+}
+
+.status-pill i {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 7px;
+  border-radius: 50%;
+  background: var(--success);
+}
+
+.outline-button {
+  background: transparent;
+  color: var(--primary);
+  border: 1px solid var(--border);
+  padding: 9px 13px;
+}
+
+.hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 28px;
+  background: linear-gradient(120deg, #ffffff 0%, #edf6ff 100%);
+}
+
+.hero h2 {
+  margin: 0;
+  max-width: 720px;
+  font-size: clamp(1.45rem, 1.2rem + 1vw, 2.15rem);
+}
+
+.hero-copy {
+  max-width: 720px;
+  margin: 12px 0 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.hero-actions {
+  flex-direction: column;
+  align-items: flex-end;
+  min-width: 205px;
+}
+
+.hero-actions .subtext {
+  max-width: 230px;
+  text-align: right;
+}
+
+.analytics-grid {
+  grid-template-columns: repeat(2, minmax(300px, 1fr));
+}
+
+.funnel {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  align-items: end;
+  min-height: 116px;
+}
+
+.funnel div {
+  display: grid;
+  gap: 8px;
+  align-content: end;
+  min-height: calc(44px + var(--step, 0px));
+  padding: 12px 8px;
+  border-radius: 10px 10px 4px 4px;
+  background: linear-gradient(180deg, #dbeeff, #f6fbff);
+  color: var(--muted);
+  text-align: center;
+}
+
+.funnel div:nth-child(2) { --step: 24px; }
+.funnel div:nth-child(3) { --step: 42px; }
+.funnel div:nth-child(4) { --step: 58px; }
+.funnel strong { color: var(--primary); font-size: 1.45rem; }
+
+.bar-chart {
+  display: grid;
+  gap: 15px;
+  padding-top: 5px;
+}
+
+.bar-chart > div {
+  display: grid;
+  grid-template-columns: 50px 1fr;
+  gap: 10px;
+  align-items: center;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.bar-chart i {
+  display: block;
+  width: var(--value);
+  min-width: 28px;
+  height: 18px;
+  border-radius: 5px;
+  background: linear-gradient(90deg, var(--primary), #20a0bd);
+}
+
+.bar-chart b {
+  position: relative;
+  left: calc(100% + 7px);
+  color: var(--text);
+  font-style: normal;
+}
+
+.toolbar input {
+  width: 190px;
+  padding: 9px 11px;
+}
+
 .eyebrow {
   margin: 0 0 6px;
   letter-spacing: 0.14em;
@@ -420,9 +558,46 @@ thead th {
 
   .cards,
   .panel-grid,
+  .analytics-grid,
   .two-column,
   .strategy-grid,
   .channel-form {
     grid-template-columns: 1fr;
   }
+
+  .app-header,
+  .hero {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .header-actions,
+  .hero-actions {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .hero-actions .subtext {
+    text-align: left;
+  }
+
+  .toolbar {
+    width: 100%;
+  }
+
+  .toolbar input {
+    flex: 1;
+    width: auto;
+  }
+
+  .funnel {
+    gap: 5px;
+  }
+}
+
+@media print {
+  body { background: white; }
+  .header-actions, .hero-actions, .toolbar, .toast { display: none; }
+  .layout { padding: 0; }
+  .panel, .card { box-shadow: none; break-inside: avoid; }
 }

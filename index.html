@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Asahi × 菜蟲農食台灣通路合作與增量分銷 Dashboard" />
     <title>Asahi 通路合作 Dashboard</title>
     <link rel="stylesheet" href="style.css" />
   </head>
@@ -10,75 +11,45 @@
     <header class="topbar">
       <div>
         <p class="eyebrow">Channel Expansion Control</p>
-        <h1>Asahi 通路合作 Dashboard</h1>
+        <h1 data-i18n="title">Asahi 通路合作 Dashboard</h1>
       </div>
-      <div class="status-pill">Pilot execution</div>
+      <div class="header-actions">
+        <div class="status-pill" data-i18n="status">Pilot execution</div>
+        <button class="outline-button" id="language-toggle">EN</button>
+        <button class="outline-button" id="print-button" data-i18n="print">列印簡報</button>
+      </div>
     </header>
 
     <main class="layout">
+      <section class="hero panel">
+        <div>
+          <p class="eyebrow" data-i18n="eyebrow">Executive overview</p>
+          <h2 data-i18n="heroTitle">活用 IoT 冷鏈物流，切入中餐與飯店藍海通路</h2>
+          <p class="hero-copy" data-i18n="heroCopy">以 Mapping 先行、Pilot 驗證、商務條件複製，建立 Asahi 的增量通路引擎。</p>
+        </div>
+        <div class="hero-stat"><strong>5–10</strong><span data-i18n="pilotTarget">Pilot 目標客戶</span></div>
+      </section>
+
       <section class="cards">
-        <article class="card accent"><span>Mapping</span><strong>5</strong><small>Channel accounts</small></article>
-        <article class="card accent-green"><span>Uncovered</span><strong>3</strong><small>Incremental opportunities</small></article>
-        <article class="card"><span>Pilot</span><strong>1</strong><small>In progress</small></article>
-        <article class="card danger-card"><span>Risk alerts</span><strong>1</strong><small>Need review</small></article>
+        <article class="card accent"><span>Mapping</span><strong id="metric-mapping">5</strong><small data-i18n="accounts">Channel accounts</small></article>
+        <article class="card accent-green"><span data-i18n="uncovered">Uncovered</span><strong id="metric-opportunities">3</strong><small data-i18n="opportunities">Incremental opportunities</small></article>
+        <article class="card"><span>Pilot</span><strong id="metric-pilot">1</strong><small data-i18n="inProgress">In progress</small></article>
+        <article class="card danger-card"><span data-i18n="riskAlerts">Risk alerts</span><strong id="metric-risks">1</strong><small data-i18n="needReview">Need review</small></article>
+      </section>
+
+      <section class="panel-grid analytics-grid">
+        <article class="panel"><div class="panel-header"><p class="eyebrow">Pilot funnel</p><h2 data-i18n="funnelTitle">通路轉換進度</h2></div><div class="funnel"><div><span>Mapping</span><strong>5</strong></div><div><span>Pilot</span><strong>1</strong></div><div><span>Listing</span><strong>0</strong></div><div><span>Scale</span><strong>0</strong></div></div></article>
+        <article class="panel"><div class="panel-header"><p class="eyebrow">Regional coverage</p><h2 data-i18n="regionTitle">區域機會分布</h2></div><div class="bar-chart"><div><span>北區</span><i style="--value:80%"><b>2</b></i></div><div><span>中區</span><i style="--value:65%"><b>2</b></i></div><div><span>南區</span><i style="--value:35%"><b>1</b></i></div></div></article>
       </section>
 
       <section class="panel mapping-panel">
-        <div class="panel-header strategy-heading">
-          <div>
-            <p class="eyebrow">Zero-conflict channel mapping</p>
-            <h2>新增通路與 Pilot 管理</h2>
-          </div>
-          <span class="strategy-badge">5-category mapping</span>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr><th>客戶</th><th>區域</th><th>通路</th><th>Mapping</th><th>Pilot</th><th>風險</th><th>負責人</th><th>下一步</th></tr>
-            </thead>
-            <tbody>
-              <tr><td><strong>台北城市商旅</strong><small class="subtext">台灣啤酒</small></td><td>北區</td><td>飯店</td><td><span class="mapping-tag opportunity">未覆蓋缺口</span></td><td><span class="status shipped">進行中</span></td><td><span class="risk 低">低</span></td><td>北區業務</td><td>安排產品試飲</td></tr>
-              <tr><td><strong>台中宴會會館</strong><small class="subtext">尚無品牌資料</small></td><td>中區</td><td>飯店宴會</td><td><span class="mapping-tag opportunity">菜蟲獨有新通路</span></td><td><span class="status pending">候選</span></td><td><span class="risk 低">低</span></td><td>中區業務</td><td>確認宴會採購規格</td></tr>
-              <tr><td><strong>高雄海鮮餐廳</strong><small class="subtext">Kirin</small></td><td>南區</td><td>中餐</td><td><span class="mapping-tag neutral">供應中斷</span></td><td><span class="status pending">候選</span></td><td><span class="risk 中">中</span></td><td>南區業務</td><td>確認月採購量</td></tr>
-              <tr><td><strong>健康食光餐飲</strong><small class="subtext">尚無品牌資料</small></td><td>北區</td><td>健康餐</td><td><span class="mapping-tag opportunity">未覆蓋缺口</span></td><td><span class="status pending">待啟動</span></td><td><span class="risk 低">低</span></td><td>北區業務</td><td>寄送 Dry Zero 試飲</td></tr>
-              <tr><td><strong>既有日式連鎖</strong><small class="subtext">Asahi</small></td><td>中區</td><td>連鎖餐飲</td><td><span class="mapping-tag neutral">既有經銷商覆蓋</span></td><td><span class="status delivered">排除</span></td><td><span class="risk 高">高</span></td><td>中區業務</td><td>暫不開發</td></tr>
-            </tbody>
-          </table>
-        </div>
+        <div class="panel-header strategy-heading"><div><p class="eyebrow">Zero-conflict channel mapping</p><h2 data-i18n="mappingTitle">新增通路與 Pilot 管理</h2></div><input id="channel-search" type="search" placeholder="搜尋客戶或區域" data-i18n-placeholder="search" /></div>
+        <div class="table-wrap"><table><thead><tr><th data-i18n="customer">客戶</th><th data-i18n="region">區域</th><th data-i18n="channel">通路</th><th>Mapping</th><th>Pilot</th><th data-i18n="risk">風險</th><th data-i18n="owner">負責人</th><th data-i18n="next">下一步</th></tr></thead><tbody id="channel-table"></tbody></table></div>
       </section>
 
-      <section class="strategy panel">
-        <div class="panel-header strategy-heading">
-          <div><p class="eyebrow">Incremental channel expansion</p><h2>Asahi × 菜蟲農食合作路線</h2></div>
-          <span class="strategy-badge">Pilot first</span>
-        </div>
-        <div class="strategy-grid">
-          <div>
-            <h3>通路 Mapping 五分類</h3>
-            <ol class="mapping-list">
-              <li>已使用 Asahi</li><li>既有經銷商覆蓋</li><li>尚未覆蓋的缺口</li><li>供應中斷客戶</li><li>菜蟲農食獨有新通路</li>
-            </ol>
-          </div>
-          <div>
-            <h3>三階段落地</h3>
-            <div class="roadmap">
-              <div><strong>01</strong><span>Mapping ＋法規檢核</span></div>
-              <div><strong>02</strong><span>5–10 家 Pilot 試點</span></div>
-              <div><strong>03</strong><span>Listing、佣金、帳期談判</span></div>
-            </div>
-          </div>
-          <div class="guardrail">
-            <h3>合作防線</h3>
-            <p>只開發增量通路，不搶既有經銷商客戶；依區域與通路控價，避免流貨互打。</p>
-          </div>
-        </div>
-      </section>
-
-      <section class="panel project-note">
-        <p class="eyebrow">Project brief</p>
-        <h2>活用 IoT 冷鏈物流，切入中餐與飯店藍海通路</h2>
-        <p>本 Dashboard 展示菜蟲農食 × Asahi 的通路拓展計畫：先完成客戶 Mapping，再以 5–10 家 Pilot 驗證產品、配送與商業條件，最後建立可複製的正式分銷模式。</p>
-      </section>
+      <section class="strategy panel"><div class="panel-header strategy-heading"><div><p class="eyebrow">Incremental channel expansion</p><h2>Asahi × 菜蟲農食合作路線</h2></div><span class="strategy-badge">Pilot first</span></div><div class="strategy-grid"><div><h3 data-i18n="categories">通路 Mapping 五分類</h3><ol class="mapping-list"><li>已使用 Asahi</li><li>既有經銷商覆蓋</li><li>尚未覆蓋的缺口</li><li>供應中斷客戶</li><li>菜蟲農食獨有新通路</li></ol></div><div><h3 data-i18n="roadmap">三階段落地</h3><div class="roadmap"><div><strong>01</strong><span>Mapping ＋法規檢核</span></div><div><strong>02</strong><span>5–10 家 Pilot 試點</span></div><div><strong>03</strong><span>Listing、佣金、帳期談判</span></div></div></div><div class="guardrail"><h3 data-i18n="guardrail">合作防線</h3><p>只開發增量通路，不搶既有經銷商客戶；依區域與通路控價，避免流貨互打。</p></div></div></section>
+      <section class="panel project-note"><p class="eyebrow">Project brief</p><h2 data-i18n="briefTitle">把冷鏈配送變成 Asahi 的增量通路引擎</h2><p data-i18n="briefCopy">先完成客戶 Mapping，再以 5–10 家 Pilot 驗證產品、配送與商業條件，最後建立可複製的正式分銷模式。</p></section>
     </main>
+    <script src="dashboard.js"></script>
   </body>
 </html>
