@@ -11,69 +11,6 @@
   <div><p class="eyebrow">Zero-Sugar Health Channel · Decision Center</p><h1>Asahi 客戶機會指揮中心</h1></div>
   <div class="header-actions"><span class="status-pill">● V1 decision model</span><button class="outline-button" id="language-toggle">EN</button><button class="outline-button" id="print-button">列印簡報</button></div>
 </header>
-<!doctype html>
-<html lang="zh-Hant">
-<head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="菜蟲農食 × Asahi Zero-Sugar Health Channel Opportunity Engine">
-  <title>Asahi Zero-Sugar Channel Command Center</title>
-  <link rel="stylesheet" href="style.css?v=opportunity-v1">
-</head>
-<body>
-<header class="topbar">
-  <div><p class="eyebrow">Zero-Sugar Health Channel · Decision Center</p><h1>Asahi 客戶機會指揮中心</h1></div>
-  <div class="header-actions"><span class="status-pill">● V1 decision model</span><button class="outline-button" id="language-toggle">EN</button><button class="outline-button" id="print-button">列印簡報</button></div>
-</header>
-<main class="layout">
-  <section class="hero panel">
-    <div><p class="eyebrow">菜蟲農食 × Asahi</p><h2>下一個該聯繫誰？</h2><p class="hero-copy">用既有供應關係找出零糖質啤酒的健康餐飲新通路；策略潛力與執行準備度分開判斷，不把蔬菜營收誤當成酒類潛力。</p></div>
-    <div class="model-legend"><span>策略潛力 <small>Strategic Potential</small></span><b>×</b><span>執行準備度 <small>Execution Readiness</small></span></div>
-  </section>
-
-  <section class="decision-summary panel" aria-label="本週決策摘要">
-    <div class="summary-heading"><div><p class="eyebrow">本週決策摘要</p><h2>先處理最需要業務行動的客戶</h2></div><span id="summary-period" class="subtext">資料載入中</span></div>
-    <div class="summary-kpis">
-      <article class="summary-kpi primary"><span>本週優先聯繫</span><strong id="metric-call-today">0</strong><small>Call Today / Pilot Candidate</small></article>
-      <article class="summary-kpi success"><span>Pilot Now</span><strong id="metric-pilot-now">0</strong><small>策略潛力 × 執行準備度皆高</small></article>
-      <article class="summary-kpi warning"><span>需要補資料</span><strong id="metric-qualification">0</strong><small>先 Qualification 才能判斷</small></article>
-    </div>
-    <div class="secondary-metrics"><span>健康餐客戶 <b id="metric-health">0</b></span><span>高潛力 <b id="metric-high-potential">0</b></span><span>Category Creation <b id="metric-category-creation">0</b></span><span>Conversion <b id="metric-conversion">0</b></span><span>Rollout 門店 <b id="metric-rollout">0</b></span><span>Asahi 新通路 <b id="metric-incremental">0</b></span></div>
-  </section>
-
-  <section class="panel import-panel">
-    <div class="panel-header"><div><p class="eyebrow">Data foundation</p><h2>原始資料與 Qualification</h2><p class="subtext">保留原始客戶總表；人工補充資料儲存在本機瀏覽器，CSV 重新匯入會依客戶名稱合併。</p></div>
-      <div class="toolbar"><label class="file-button" for="csv-file">匯入 CSV</label><input id="csv-file" type="file" accept=".csv,text/csv" hidden><button id="export-csv" class="secondary">Export CSV</button><button id="reset-data" class="secondary">重新載入客戶總表</button></div>
-    </div><div id="import-status" class="notice" role="status" aria-live="polite"></div><div class="source-meta"><span>資料來源：<b id="source-label">Google Sheet</b></span><span>最後更新：<b id="last-updated">—</b></span></div><div id="empty-state" class="empty-state" hidden><strong>目前沒有可用客戶資料</strong><span id="empty-state-message">請重新載入客戶總表，或匯入 CSV。</span><div><button id="empty-reload" class="secondary">重新載入客戶總表</button><label class="file-button" for="csv-file">匯入 CSV</label></div></div>
-  </section>
-
-  <section class="panel next-actions-panel">
-    <div class="panel-header strategy-heading"><div><p class="eyebrow">Action first</p><h2>WHO SHOULD WE CALL NEXT?</h2><p class="subtext">綜合策略價值、執行準備度、Opportunity Type 與資料缺口產生下一步。</p></div><span class="strategy-badge">Top 10 actions</span></div>
-    <div id="next-actions" class="next-actions"></div><div id="actions-empty" class="empty-state compact" hidden>目前沒有可產生的業務待辦，請先完成資料 Qualification。</div>
-  </section>
-
-  <section class="panel-grid analytics-grid">
-    <article class="panel"><div class="panel-header"><p class="eyebrow">Opportunity matrix</p><h2>策略潛力 × 執行準備度</h2></div><div class="opportunity-matrix" id="opportunity-matrix"><span class="matrix-axis matrix-y">策略潛力 ↑</span><span class="matrix-axis matrix-x">執行準備度 →</span><span class="quadrant q-tl">💎 策略押注</span><span class="quadrant q-tr">🔥 PILOT NOW</span><span class="quadrant q-bl">長期培養</span><span class="quadrant q-br">⚡ 快速成果</span></div></article>
-    <article class="panel"><div class="panel-header"><p class="eyebrow">Health channel funnel</p><h2>健康通路目標漏斗</h2></div><div id="health-funnel" class="health-funnel"></div></article>
-  </section>
-
-  <section class="panel-grid analytics-grid">
-    <article class="panel"><div class="panel-header"><p class="eyebrow">Opportunity breakdown</p><h2>Opportunity Type</h2></div><div id="opportunity-chart" class="bar-chart"></div></article>
-    <article class="panel"><div class="panel-header"><p class="eyebrow">Regional analysis</p><h2>健康餐區域分布</h2></div><div id="region-chart" class="bar-chart"></div></article>
-    <article class="panel"><div class="panel-header"><p class="eyebrow">Qualification queue</p><h2>下一步要補什麼資料？</h2></div><div id="qualification-queue" class="qualification-queue"></div></article>
-  </section>
-
-  <section class="panel mapping-panel">
-    <div class="panel-header strategy-heading"><div><p class="eyebrow">Account database</p><h2>客戶機會資料庫</h2></div>
-      <div class="table-tools"><input id="channel-search" type="search" placeholder="搜尋客戶、類型或狀態"><select id="quick-filter" aria-label="快速篩選"><option value="">快速篩選</option><option value="call">今天優先處理</option><option value="pilot">只看 Pilot Now</option><option value="missing">只看需要補資料</option><option value="potential">只看高潛力客戶</option><option value="healthy">Healthy / Fitness Meal</option><option value="japanese">Japanese</option><option value="bar">Bar / Bistro</option><option value="unknown-cuisine">Unknown Cuisine</option></select><select id="region-filter"><option value="">所有區域</option></select><select id="opportunity-filter"><option value="">所有機會類型</option></select><select id="cuisine-filter"><option value="">所有 Cuisine Type</option></select><select id="quadrant-filter"><option value="">所有象限</option></select><select id="alcohol-filter"><option value="">所有酒類狀態</option></select><select id="stage-filter"><option value="">所有 Pipeline Stage</option></select><select id="confidence-filter"><option value="">所有資料可信度</option></select><select id="sort-select"><option value="next">依優先行動</option><option value="potential">依策略潛力</option><option value="readiness">依執行準備度</option><option value="stores">依門店</option><option value="revenue">依近12月M</option><option value="name">依客戶</option></select></div>
-    </div>
-    <div class="table-wrap"><table><thead><tr><th>客戶</th><th>區域</th><th>策略潛力<br><small>Strategic Potential</small></th><th>執行準備度<br><small>Execution Readiness</small></th><th>機會類型</th><th>Cuisine Type</th><th>資料可信度<br><small>Data Confidence</small></th><th>下一步行動</th><th>詳情</th></tr></thead><tbody id="customer-table"></tbody></table></div>
-  </section>
-
-  <section class="panel model-note"><div class="panel-header"><div><p class="eyebrow">Qualification workflow</p><h2>Data model V1</h2><p class="subtext">Unknown 不等於 0；資料不足會顯示 Needs Qualification，未臆測酒類、決策者或營運條件。</p></div><span class="strategy-badge">Raw → Qualification → Calculated</span></div></section>
-</main>
-<aside id="detail-drawer" class="drawer" aria-hidden="true"><button id="drawer-close" class="drawer-close" aria-label="Close">×</button><div id="drawer-content"></div></aside><div id="drawer-backdrop" class="drawer-backdrop"></div>
-<script src="dashboard.js?v=opportunity-v2"></script>
-</body></html>
 <main class="layout">
   <section class="hero panel">
     <div><p class="eyebrow">菜蟲農食 × Asahi</p><h2>下一個該聯繫誰？</h2><p class="hero-copy">用既有供應關係找出零糖質啤酒的健康餐飲新通路；策略潛力與執行準備度分開判斷，不把蔬菜營收誤當成酒類潛力。</p></div>
