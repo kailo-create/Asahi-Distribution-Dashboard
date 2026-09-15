@@ -148,7 +148,7 @@ select {
   padding-top: 5px;
 }
 
-.bar-chart > div {
+.bar-chart > div:not(.bar-row) {
   display: grid;
   grid-template-columns: 50px 1fr;
   gap: 10px;
@@ -157,7 +157,7 @@ select {
   font-size: 0.86rem;
 }
 
-.bar-chart i {
+.bar-chart > div:not(.bar-row) i {
   display: block;
   width: var(--value);
   min-width: 28px;
@@ -166,7 +166,7 @@ select {
   background: linear-gradient(90deg, var(--primary), #20a0bd);
 }
 
-.bar-chart b {
+.bar-chart > div:not(.bar-row) b {
   position: relative;
   left: calc(100% + 7px);
   color: var(--text);
@@ -483,11 +483,23 @@ button:hover {
 
 .table-wrap {
   overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+  min-width: 0;
+  overscroll-behavior-x: contain;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
+}
+
+.mapping-panel {
+  min-width: 0;
+}
+
+.mapping-panel table {
+  min-width: 1420px;
 }
 
 th,
