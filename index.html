@@ -40,23 +40,23 @@
   </section>
 
   <section class="panel next-actions-panel">
-    <div class="panel-header strategy-heading"><div><p class="eyebrow">Action first</p><h2>WHO SHOULD WE CALL NEXT?</h2><p class="subtext">綜合策略價值、執行準備度、Opportunity Type 與資料缺口產生下一步。</p></div><span class="strategy-badge">Top 10 actions</span></div>
+    <div class="panel-header strategy-heading"><div><p class="eyebrow">行動優先</p><h2>下一個該聯繫誰？</h2><p class="subtext">綜合策略價值、執行準備度、機會類型與資料缺口產生下一步。</p></div><span class="strategy-badge">前 10 項待辦</span></div>
     <div id="next-actions" class="next-actions"></div><div id="actions-empty" class="empty-state compact" hidden>目前沒有可產生的業務待辦，請先完成資料 Qualification。</div>
   </section>
 
   <section id="analytics" class="panel-grid analytics-grid">
-    <article class="panel"><div class="panel-header"><p class="eyebrow">Opportunity matrix</p><h2>策略潛力 × 執行準備度</h2></div><div class="opportunity-matrix" id="opportunity-matrix"><span class="matrix-axis matrix-y">策略潛力 ↑</span><span class="matrix-axis matrix-x">執行準備度 →</span><span class="quadrant q-tl">💎 策略押注</span><span class="quadrant q-tr">🔥 PILOT NOW</span><span class="quadrant q-bl">長期培養</span><span class="quadrant q-br">⚡ 快速成果</span></div></article>
-    <article class="panel"><div class="panel-header"><p class="eyebrow">Health channel funnel</p><h2>健康通路目標漏斗</h2></div><div id="health-funnel" class="health-funnel"></div></article>
+    <article class="panel"><div class="panel-header"><p class="eyebrow">機會矩陣</p><h2>策略潛力 × 執行準備度</h2></div><div class="opportunity-matrix" id="opportunity-matrix"><span class="matrix-axis matrix-y">策略潛力 ↑</span><span class="matrix-axis matrix-x">執行準備度 →</span><span class="quadrant q-tl">💎 策略押注</span><span class="quadrant q-tr">🔥 PILOT NOW</span><span class="quadrant q-bl">長期培養</span><span class="quadrant q-br">⚡ 快速成果</span></div></article>
+    <article class="panel"><div class="panel-header"><p class="eyebrow">健康通路漏斗</p><h2>健康通路目標漏斗</h2></div><div id="health-funnel" class="health-funnel"></div></article>
   </section>
 
   <section class="panel-grid analytics-grid">
-    <article class="panel"><div class="panel-header"><p class="eyebrow">Opportunity breakdown</p><h2>Opportunity Type</h2></div><div id="opportunity-chart" class="bar-chart"></div></article>
-    <article class="panel"><div class="panel-header"><p class="eyebrow">Regional analysis</p><h2>健康餐區域分布</h2></div><div id="region-chart" class="bar-chart"></div></article>
-    <article class="panel"><div class="panel-header"><p class="eyebrow">Qualification queue</p><h2>下一步要補什麼資料？</h2></div><div id="qualification-queue" class="qualification-queue"></div></article>
+    <article class="panel"><div class="panel-header"><p class="eyebrow">機會類型分析</p><h2>機會類型分布</h2></div><div id="opportunity-chart" class="bar-chart"></div></article>
+    <article class="panel"><div class="panel-header"><p class="eyebrow">區域分析</p><h2>健康餐區域分布</h2></div><div id="region-chart" class="bar-chart"></div></article>
+    <article class="panel"><div class="panel-header"><p class="eyebrow">資料補齊清單</p><h2>下一步要補什麼資料？</h2></div><div id="qualification-queue" class="qualification-queue"></div></article>
   </section>
 
   <section id="customer-database" class="panel mapping-panel">
-    <div class="panel-header strategy-heading"><div><p class="eyebrow">Account database</p><h2>客戶機會資料庫</h2></div>
+    <div class="panel-header strategy-heading"><div><p class="eyebrow">客戶資料</p><h2>客戶機會資料庫</h2></div>
       <div class="table-tools"><input id="channel-search" type="search" placeholder="搜尋客戶、類型或狀態"><select id="quick-filter" aria-label="快速篩選"><option value="">快速篩選</option><option value="call">今天優先處理</option><option value="pilot">只看 Pilot Now</option><option value="missing">只看需要補資料</option><option value="potential">只看高潛力客戶</option><option value="healthy">Healthy / Fitness Meal</option><option value="japanese">Japanese</option><option value="bar">Bar / Bistro</option><option value="unknown-cuisine">Unknown Cuisine</option></select><select id="region-filter"><option value="">所有區域</option></select><select id="opportunity-filter"><option value="">所有機會類型</option></select><select id="cuisine-filter"><option value="">所有 Cuisine Type</option></select><select id="quadrant-filter"><option value="">所有象限</option></select><select id="alcohol-filter"><option value="">所有酒類狀態</option></select><select id="stage-filter"><option value="">所有 Pipeline Stage</option></select><select id="confidence-filter"><option value="">所有資料可信度</option></select><select id="sort-select"><option value="next">依優先行動</option><option value="potential">依策略潛力</option><option value="readiness">依執行準備度</option><option value="stores">依門店</option><option value="revenue">依近12月M</option><option value="name">依客戶</option></select></div>
     </div>
     <div class="table-wrap"><table><thead><tr><th>客戶</th><th>區域</th><th>策略潛力<br><small>Strategic Potential</small></th><th>執行準備度<br><small>Execution Readiness</small></th><th>機會類型</th><th>Cuisine Type</th><th>資料可信度<br><small>Data Confidence</small></th><th>下一步行動</th><th>詳情</th></tr></thead><tbody id="customer-table"></tbody></table></div>
