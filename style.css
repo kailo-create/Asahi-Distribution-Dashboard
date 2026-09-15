@@ -1019,3 +1019,202 @@ body { background: var(--bg); color: var(--text); font-size: 14px; }
     grid-column: auto;
   }
 }
+
+/* Attack list table rebuild: header + rows share one grid definition */
+:root {
+  --attack-grid-columns:
+    minmax(180px, 1.3fr)
+    minmax(140px, 0.9fr)
+    minmax(110px, 0.75fr)
+    minmax(140px, 1fr)
+    minmax(180px, 1.2fr)
+    minmax(130px, 0.9fr)
+    minmax(135px, 0.9fr)
+    minmax(150px, 1fr)
+    minmax(220px, 1.5fr)
+    minmax(220px, 1.5fr)
+    minmax(150px, 0.9fr);
+}
+.attack-table-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.action-table {
+  display: block;
+  min-width: 1680px;
+  max-width: none;
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
+}
+.action-table-header,
+.next-action-card {
+  display: grid;
+  grid-template-columns: var(--attack-grid-columns);
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+}
+.action-table-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #f1f5f2;
+  border-bottom: 1px solid var(--border);
+}
+.action-table-header .action-table-head {
+  padding: 9px 11px;
+  font-size: .72rem;
+  font-weight: 800;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.next-action-card {
+  border-top: 1px solid var(--border);
+  padding: 11px;
+  background: #fff;
+  color: var(--text);
+  text-align: left;
+}
+.next-action-card:hover {
+  background: #f7faf8;
+  transform: none;
+}
+.next-action-card.recommendation-row {
+  background: #fbfdfb;
+}
+.action-table-empty-row {
+  padding: 30px 16px;
+  text-align: center;
+  color: var(--muted);
+  font-size: .85rem;
+  background: #fff;
+}
+.action-cell,
+.action-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.action-cell .cell-label,
+.action-editor .cell-label {
+  display: none;
+}
+.action-cell strong,
+.action-cell span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text);
+  font-size: .82rem;
+  line-height: 1.35;
+}
+.action-cell .name-cell {
+  color: var(--text);
+  font-weight: 700;
+}
+.action-cell .health-cell {
+  color: #176b4d;
+  font-weight: 700;
+}
+.action-cell .system-badge {
+  display: inline-flex;
+  width: fit-content;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #edf0f3;
+  color: #5f6f7a;
+  font-size: .68rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.action-editor select,
+.action-editor input {
+  width: 100%;
+  min-width: 0;
+  height: 32px;
+  padding: 5px 7px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--text);
+  font-size: .8rem;
+}
+.action-row-buttons-cell {
+  align-items: flex-start;
+}
+.action-row-buttons {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .attack-table-wrap {
+    border: 0;
+    overflow: visible;
+  }
+  .action-table {
+    min-width: 0;
+  }
+  .action-table-header {
+    display: none;
+  }
+  .next-action-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    grid-template-columns: none;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    padding: 12px;
+  }
+  .health-segment-cell-wrap,
+  .cuisine-cell-wrap {
+    display: none;
+  }
+  .action-cell,
+  .action-editor {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+  .action-cell .cell-label,
+  .action-editor .cell-label {
+    display: inline-block;
+    flex: 0 0 auto;
+    font-size: .68rem;
+    color: var(--muted);
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .action-cell strong,
+  .action-cell span {
+    white-space: normal;
+    text-align: right;
+  }
+  .action-editor select,
+  .action-editor input {
+    width: auto;
+    max-width: 62%;
+  }
+  .action-row-buttons-cell {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+  .action-row-buttons-cell .cell-label {
+    display: none;
+  }
+  .action-row-buttons {
+    justify-content: flex-end;
+  }
+}
