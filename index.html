@@ -4,7 +4,7 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="description" content="菜蟲農食 × Asahi Zero-Sugar Health Channel Opportunity Engine">
   <title>Asahi Zero-Sugar Channel Command Center</title>
-  <link rel="stylesheet" href="style.css?v=cuisine-v7">
+  <link rel="stylesheet" href="style.css?v=cuisine-v8">
 </head>
 <body>
 <header class="topbar">
@@ -28,6 +28,10 @@
     <div class="summary-kpis">
       <article class="summary-kpi primary"><span>本週優先聯繫</span><strong id="metric-call-today">0</strong><small>Call Today / Pilot Candidate</small></article>
       <article class="summary-kpi success"><span>Pilot Now</span><strong id="metric-pilot-now">0</strong><small>策略潛力 × 執行準備度皆高</small></article>
+      <article class="summary-kpi primary"><span>本週 Must Attack</span><strong id="metric-must-attack">0</strong><small>人工指定優先</small></article>
+      <article class="summary-kpi"><span>已排負責人</span><strong id="metric-owned">0</strong><small>Owner 已設定</small></article>
+      <article class="summary-kpi warning"><span>Blocked 客戶</span><strong id="metric-blocked">0</strong><small>需要管理介入</small></article>
+      <article class="summary-kpi"><span>等待回覆</span><strong id="metric-waiting">0</strong><small>Waiting Reply</small></article>
       <article class="summary-kpi warning"><span>需要補資料</span><strong id="metric-qualification">0</strong><small>先 Qualification 才能判斷</small></article>
     </div>
     <div class="secondary-metrics"><span>健康餐客戶 <b id="metric-health">0</b></span><span>高潛力 <b id="metric-high-potential">0</b></span><span>Category Creation <b id="metric-category-creation">0</b></span><span>Conversion <b id="metric-conversion">0</b></span><span>Rollout 門店 <b id="metric-rollout">0</b></span><span>Asahi 新通路 <b id="metric-incremental">0</b></span></div>
@@ -42,6 +46,7 @@
   <section class="panel next-actions-panel">
     <div class="panel-header strategy-heading"><div><p class="eyebrow">行動優先</p><h2>下一個該聯繫誰？</h2><p class="subtext">綜合策略價值、執行準備度、機會類型與資料缺口產生下一步。</p></div><span class="strategy-badge">前 10 項待辦</span></div>
     <div id="next-actions" class="next-actions"></div><div id="actions-empty" class="empty-state compact" hidden>目前沒有可產生的業務待辦，請先完成資料 Qualification。</div>
+    <div class="ceo-attention-panel"><h3>CEO Attention</h3><div id="ceo-attention"></div></div>
   </section>
 
   <section id="analytics" class="panel-grid analytics-grid">
@@ -65,5 +70,5 @@
   <section class="panel model-note"><div class="panel-header"><div><p class="eyebrow">Qualification workflow</p><h2>Data model V1</h2><p class="subtext">Unknown 不等於 0；資料不足會顯示 Needs Qualification，未臆測酒類、決策者或營運條件。</p></div><span class="strategy-badge">Raw → Qualification → Calculated</span></div></section>
 </main>
 <aside id="detail-drawer" class="drawer" aria-hidden="true"><button id="drawer-close" class="drawer-close" aria-label="Close">×</button><div id="drawer-content"></div></aside><div id="drawer-backdrop" class="drawer-backdrop"></div>
-<script src="dashboard.js?v=cuisine-v7"></script>
+<script src="dashboard.js?v=cuisine-v8"></script>
 </body></html>
