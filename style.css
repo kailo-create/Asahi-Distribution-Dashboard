@@ -786,7 +786,7 @@ thead th {
   .header-actions, .hero-actions, .toolbar, .toast { display: none; }
   .layout { padding: 0; }
   .panel, .card { box-shadow: none; break-inside: avoid; }
-  .mapping-panel, .import-panel, .source-meta, .table-tools, .link-button { display: none !important; }
+  .mapping-panel, .import-panel, .source-meta, .table-tools, .table-wrap, .link-button { display: none !important; }
   .model-note { display: block !important; }
   .next-actions-panel, .opportunity-matrix, .qualification-queue { break-inside: avoid; }
 }
