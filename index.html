@@ -4,7 +4,7 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="description" content="菜蟲農食 × Asahi Zero-Sugar Health Channel Opportunity Engine">
   <title>Asahi Zero-Sugar Channel Command Center</title>
-  <link rel="stylesheet" href="style.css?v=sync-v12">
+  <link rel="stylesheet" href="style.css?v=analytics-v13">
 </head>
 <body>
 <header class="topbar">
@@ -57,15 +57,25 @@
     <div class="ceo-attention-panel"><h3>CEO Attention</h3><div id="ceo-attention"></div></div>
   </section>
 
-  <section id="analytics" class="panel-grid analytics-grid">
-    <article class="panel"><div class="panel-header"><p class="eyebrow">機會矩陣</p><h2>策略潛力 × 執行準備度</h2></div><div class="opportunity-matrix" id="opportunity-matrix"><span class="matrix-axis matrix-y">策略潛力 ↑</span><span class="matrix-axis matrix-x">執行準備度 →</span><span class="quadrant q-tl">💎 策略押注</span><span class="quadrant q-tr">🔥 PILOT NOW</span><span class="quadrant q-bl">長期培養</span><span class="quadrant q-br">⚡ 快速成果</span></div></article>
-    <article class="panel"><div class="panel-header"><p class="eyebrow">健康通路漏斗</p><h2>健康通路目標漏斗</h2></div><div id="health-funnel" class="health-funnel"></div></article>
+  <div id="analytics-empty" class="empty-state analytics-empty" hidden>
+    <strong>尚未載入客戶資料，請先同步每日資料或匯入 CSV。</strong>
+    <div><button id="analytics-empty-sync" class="secondary" type="button">同步每日資料</button><label class="file-button" for="csv-file">匯入 CSV</label></div>
+  </div>
+
+  <section id="analytics" class="panel-grid analytics-grid analytics-primary">
+    <article class="panel"><div class="panel-header"><p class="eyebrow">健康餐通路優先分析</p><h2>健康通路開發進度</h2></div><div id="health-funnel" class="health-pipeline"></div></article>
+    <article class="panel"><div class="panel-header"><p class="eyebrow">資料補齊清單</p><h2>下一步要補什麼資料？</h2></div><div id="qualification-queue" class="qualification-queue"></div></article>
   </section>
 
-  <section class="panel-grid analytics-grid">
-    <article class="panel"><div class="panel-header"><p class="eyebrow">機會類型分析</p><h2>機會類型分布</h2></div><div id="opportunity-chart" class="bar-chart"></div></article>
-    <article class="panel"><div class="panel-header"><p class="eyebrow">區域分析</p><h2>健康餐區域分布</h2></div><div id="region-chart" class="bar-chart"></div></article>
-    <article class="panel"><div class="panel-header"><p class="eyebrow">資料補齊清單</p><h2>下一步要補什麼資料？</h2></div><div id="qualification-queue" class="qualification-queue"></div></article>
+  <section class="panel advanced-analytics">
+    <details>
+      <summary>進階分析（機會矩陣 / 區域 / 類型分布）</summary>
+      <div class="panel-grid analytics-grid">
+        <article class="panel panel-sub"><div class="panel-header"><p class="eyebrow">機會矩陣</p><h2>策略潛力 × 執行準備度</h2><p class="subtext">用於檢查模型分布，不作為本週作戰名單唯一依據。</p></div><div class="opportunity-matrix compact" id="opportunity-matrix"><span class="matrix-axis matrix-y">策略潛力 ↑</span><span class="matrix-axis matrix-x">執行準備度 →</span><span class="quadrant q-tl">💎 策略押注</span><span class="quadrant q-tr">🔥 PILOT NOW</span><span class="quadrant q-bl">長期培養</span><span class="quadrant q-br">⚡ 快速成果</span></div></article>
+        <article class="panel panel-sub"><div class="panel-header"><p class="eyebrow">區域分析</p><h2>健康餐區域分布</h2></div><div id="region-chart" class="bar-chart"></div></article>
+        <article class="panel panel-sub"><div class="panel-header"><p class="eyebrow">機會類型分析</p><h2>機會類型分布</h2></div><div id="opportunity-chart" class="bar-chart"></div></article>
+      </div>
+    </details>
   </section>
 
   <section id="customer-database" class="panel mapping-panel">
@@ -78,5 +88,5 @@
   <section class="panel model-note"><div class="panel-header"><div><p class="eyebrow">Qualification workflow</p><h2>Data model V1</h2><p class="subtext">Unknown 不等於 0；資料不足會顯示 Needs Qualification，未臆測酒類、決策者或營運條件。</p></div><span class="strategy-badge">Raw → Qualification → Calculated</span></div></section>
 </main>
 <aside id="detail-drawer" class="drawer" aria-hidden="true"><button id="drawer-close" class="drawer-close" aria-label="Close">×</button><div id="drawer-content"></div></aside><div id="drawer-backdrop" class="drawer-backdrop"></div>
-<script src="dashboard.js?v=sync-v12"></script>
+<script src="dashboard.js?v=analytics-v13"></script>
 </body></html>

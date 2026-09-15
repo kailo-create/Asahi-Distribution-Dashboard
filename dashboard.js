@@ -282,10 +282,10 @@ function filteredRecords() {
   let rows=records.filter(r=>`${r.name} ${r.category} ${r.regionDisplay} ${Object.values(r.qualificationData).join(' ')}`.toLowerCase().includes(q));
   if(health)rows=rows.filter(r=>metric(r).health); filters.forEach(([id,get])=>{const value=$(id)?.value;if(value)rows=rows.filter(r=>get(r)===value);});
   if(funnelFilter==='health') rows=rows.filter(r=>metric(r).health);
-  if(funnelFilter==='potential') rows=rows.filter(r=>metric(r).strategicPotential>=scoringConfig.thresholds.highPotential);
-  if(funnelFilter==='qualified') rows=rows.filter(r=>metric(r).confidence>=75);
-  if(funnelFilter==='pilot') rows=rows.filter(r=>metric(r).stage==='Pilot Candidate'||metric(r).quadrant==='PILOT NOW');
-  if(funnelFilter==='live') rows=rows.filter(r=>metric(r).stage==='Pilot Live');
+  if(funnelFilter==='core') rows=rows.filter(r=>metric(r).healthAttackPriority==='Core Target');
+  if(funnelFilter==='attack') rows=rows.filter(r=>metric(r).inAttackList);
+  if(funnelFilter==='contacted') rows=rows.filter(r=>!['Not Started','Unknown',''].includes(metric(r).attackStatus));
+  if(funnelFilter==='pilotproposed') rows=rows.filter(r=>['Pilot Proposed','Sampling Proposed'].includes(metric(r).attackStatus)||metric(r).stage==='Pilot Candidate'||metric(r).stage==='Pilot Live');
   if(funnelFilter==='rollout') rows=rows.filter(r=>metric(r).stage==='Rollout');
   const quick=$('quick-filter')?.value;
   if(quick==='call') rows=rows.filter(isCallToday);
@@ -327,10 +327,66 @@ function renderAttackRow(r,table){const m=metric(r),row=document.createElement('
 function renderRecommendationRow(r,table){const m=metric(r),row=document.createElement('div');row.className='next-action-card recommendation-row';actionCell(row,'客戶',r.name,'strong','name-cell');actionCell(row,'Priority','System Recommended','span','system-badge');actionCell(row,'Health Fit',`${m.healthChannelFit}/100`,'span','health-cell');actionCell(row,'Health Segment',m.healthSegment,'span','health-segment-cell');actionCell(row,'Cuisine / 區域',`${m.cuisineTypeDisplay} · ${m.regionDisplay}`,'span','cuisine-cell');actionCell(row,'Owner',m.owner||'未指派');actionCell(row,'Target Date',m.targetDate||'—');actionCell(row,'Attack Status',m.attackStatus);actionCell(row,'Next Action',m.nextAction||recommendation(r));actionCell(row,'CEO Note',m.ceoNote||'—');const actionsCell=document.createElement('div');actionsCell.className='action-cell action-row-buttons-cell';text(actionsCell,'操作','span','cell-label');const actions=document.createElement('div');actions.className='action-row-buttons';const add=document.createElement('button');add.className='action-save';add.textContent='加入本週';add.addEventListener('click',()=>addToAttack(r));const detail=document.createElement('button');detail.className='link-button';detail.textContent='詳情';detail.addEventListener('click',()=>openDrawer(r));actions.append(add,detail);actionsCell.appendChild(actions);row.appendChild(actionsCell);table.appendChild(row);}
 function renderActions(){const box=$('next-actions');box.replaceChildren();const controls=document.createElement('div');controls.className='attack-controls';const attackTab=document.createElement('button');attackTab.className=actionView==='attack'?'active':'';attackTab.textContent='本週進攻名單';attackTab.addEventListener('click',()=>{actionView='attack';renderActions();});const recTab=document.createElement('button');recTab.className=actionView==='recommendation'?'active':'';recTab.textContent='系統推薦名單';recTab.addEventListener('click',()=>{actionView='recommendation';renderActions();});const picker=document.createElement('select');const defaultOption=document.createElement('option');defaultOption.value='';defaultOption.textContent='新增進攻客戶…';picker.appendChild(defaultOption);records.forEach(r=>{const option=document.createElement('option');option.value=r.name;option.textContent=r.name;picker.appendChild(option);});picker.addEventListener('change',()=>{const r=records.find(item=>item.name===picker.value);if(r)addToAttack(r);picker.value='';});controls.append(attackTab,recTab,picker);box.appendChild(controls);const rows=actionView==='attack'?[...records].filter(r=>metric(r).inAttackList&&metric(r).manualPriority!=='Not Now'&&metric(r).attackStatus!=='Paused').sort((a,b)=>actionRank(b)-actionRank(a)):[...records].sort((a,b)=>actionRank(b)-actionRank(a)).slice(0,10);const wrap=document.createElement('div');wrap.className='attack-table-wrap';const table=document.createElement('div');table.className='action-table';const header=document.createElement('div');header.className='action-table-header';ATTACK_HEADERS.forEach(label=>text(header,label,'div','action-table-head'));table.appendChild(header);if(!rows.length){const empty=document.createElement('div');empty.className='action-table-empty-row';text(empty,actionView==='attack'?'目前尚未加入本週進攻客戶。請從系統推薦名單或客戶資料庫加入。':'目前沒有符合條件的系統推薦客戶。','span');table.appendChild(empty);}else{rows.forEach(r=>actionView==='attack'?renderAttackRow(r,table):renderRecommendationRow(r,table));}wrap.appendChild(table);box.appendChild(wrap);}
 function renderMatrix(){const box=$('opportunity-matrix');box.querySelectorAll('.account-dot').forEach(e=>e.remove());records.forEach(r=>{const m=metric(r),dot=document.createElement('button');dot.className=`account-dot ${m.opportunityType.replace(/\s/g,'-')}`;dot.title=`${r.name} · Strategic ${m.strategicPotential} · Readiness ${m.executionReadiness}`;dot.style.left=`${Math.max(3,Math.min(97,m.executionReadiness))}%`;dot.style.bottom=`${Math.max(3,Math.min(97,m.strategicPotential))}%`;dot.style.width=dot.style.height=`${Math.max(10,Math.min(28,10+r.stores*1.5))}px`;dot.addEventListener('click',()=>openDrawer(r));box.appendChild(dot);});}
-function renderFunnel(){const stages=['Universe','Health Channel Identified','High Potential','Qualified','Pilot Candidate','Pilot Live','Rollout'];const filters=['','health','potential','qualified','pilot','live','rollout'];const box=$('health-funnel');box.replaceChildren();if(!records.length){text(box,'尚未載入資料，無法顯示健康通路目標漏斗。','p','subtext');return;}const counts=stages.map((s,i)=>i===0?records.length:i===1?records.filter(r=>metric(r).health).length:i===2?records.filter(r=>metric(r).strategicPotential>=70).length:i===3?records.filter(r=>metric(r).confidence>=75).length:i===4?records.filter(r=>metric(r).stage==='Pilot Candidate'||metric(r).quadrant==='PILOT NOW').length:i===5?records.filter(r=>metric(r).stage==='Pilot Live').length:records.filter(r=>metric(r).stage==='Rollout').length);stages.forEach((s,i)=>{const b=document.createElement('button');b.className='funnel-step';b.addEventListener('click',()=>{funnelFilter=filters[i];renderTable();});text(b,counts[i],'strong');text(b,s,'span');box.appendChild(b);});}
+function renderFunnel(){
+  const stages=['Universe','Health Identified','Core Target','In Attack List','Contacted','Pilot Proposed','Rollout'];
+  const filters=['','health','core','attack','contacted','pilotproposed','rollout'];
+  const box=$('health-funnel');
+  box.replaceChildren();
+  if(!records.length){ text(box,'尚未載入資料，無法顯示健康通路開發進度。','p','subtext'); return; }
+  const counts=[
+    records.length,
+    records.filter(r=>metric(r).health).length,
+    records.filter(r=>metric(r).healthAttackPriority==='Core Target').length,
+    records.filter(r=>metric(r).inAttackList).length,
+    records.filter(r=>!['Not Started','Unknown',''].includes(metric(r).attackStatus)).length,
+    records.filter(r=>['Pilot Proposed','Sampling Proposed'].includes(metric(r).attackStatus)||metric(r).stage==='Pilot Candidate'||metric(r).stage==='Pilot Live').length,
+    records.filter(r=>metric(r).stage==='Rollout').length
+  ];
+  stages.forEach((s,i)=>{
+    const b=document.createElement('button');
+    b.className='pipeline-step';
+    b.type='button';
+    b.addEventListener('click',()=>{funnelFilter=filters[i];renderTable();});
+    text(b,counts[i],'b');
+    text(b,s,'span','pipeline-label');
+    if(i>0&&counts[i-1]>0){ text(b,`${Math.round(counts[i]/counts[i-1]*100)}%`,'span','pipeline-rate'); }
+    box.appendChild(b);
+  });
+}
 function renderBars(){const box=$('opportunity-chart');box.replaceChildren();if(!records.length){text(box,'尚未載入資料，無法顯示 Opportunity Type 分布。','p','subtext');return;}const map={};records.forEach(r=>{const key=metric(r).opportunityType;map[key]=(map[key]||0)+1;});const max=Math.max(...Object.values(map),1);Object.entries(map).sort((a,b)=>b[1]-a[1]).forEach(([key,value])=>{const row=document.createElement('div');row.className='bar-row';text(row,`${key} · ${value}`,'span','bar-label');const visual=document.createElement('div');visual.className='bar-visual';const bar=document.createElement('i');bar.style.setProperty('--value',`${value/max*100}%`);visual.appendChild(bar);text(visual,`${value} 戶`,'b','bar-value');row.appendChild(visual);box.appendChild(row);});}
 function renderRegions(){const box=$('region-chart');box.replaceChildren();if(!records.length){text(box,'尚未載入資料，無法顯示區域分布。','p','subtext');return;}const map={};records.filter(r=>metric(r).health).forEach(r=>{const key=r.regionDisplay||'未填寫';map[key]??={count:0,stores:0,potential:0};map[key].count++;map[key].stores+=r.stores;map[key].potential+=metric(r).strategicPotential;});if(!Object.keys(map).length){text(box,'目前沒有健康餐通路符合條件的客戶。','p','subtext');return;}const max=Math.max(...Object.values(map).map(v=>v.count),1);Object.entries(map).sort((a,b)=>b[1].count-a[1].count).forEach(([key,v])=>{const row=document.createElement('div');row.className='bar-row';text(row,`${key} · ${v.count} 戶`,'span','bar-label');const visual=document.createElement('div');visual.className='bar-visual';const bar=document.createElement('i');bar.style.setProperty('--value',`${v.count/max*100}%`);visual.appendChild(bar);text(visual,`${v.stores} 店 · 平均 Potential ${Math.round(v.potential/v.count)}`,'b','bar-value');row.appendChild(visual);box.appendChild(row);});}
-function renderQueue(){const box=$('qualification-queue');box.replaceChildren();const rows=records.filter(r=>metric(r).health&&metric(r).strategicPotential>=70&&metric(r).missing.length).sort((a,b)=>metric(b).strategicPotential-metric(a).strategicPotential).slice(0,6);if(!rows.length){text(box,'目前沒有待補資料的高潛力客戶。','p','subtext');return;}rows.forEach(r=>{const item=document.createElement('button');item.className='queue-item';item.addEventListener('click',()=>openDrawer(r));text(item,r.name,'strong');text(item,`Strategic ${metric(r).strategicPotential} · Missing: ${metric(r).missing.slice(0,3).join('、')}`,'small');box.appendChild(item);});}
+function renderQueue(){
+  const box=$('qualification-queue');
+  box.replaceChildren();
+  if(!records.length){ text(box,'尚未載入資料，無法產生資料補齊建議。','p','subtext'); return; }
+  const rows=records.filter(r=>metric(r).health&&metric(r).strategicPotential>=70&&metric(r).missing.length).sort((a,b)=>metric(b).strategicPotential-metric(a).strategicPotential).slice(0,6);
+  if(!rows.length){ text(box,'目前沒有待補資料的高潛力客戶。','p','subtext'); return; }
+  rows.forEach(r=>{
+    const m=metric(r);
+    const item=document.createElement('div');
+    item.className='queue-item queue-row';
+    const main=document.createElement('div');
+    main.className='queue-main';
+    text(main,r.name,'strong');
+    text(main,`缺：${m.missing.slice(0,3).join('、')}`,'small');
+    text(main,`Strategic Potential ${m.strategicPotential} · ${m.healthAttackPriority==='Core Target'?'健康餐 Core Target':m.healthSegment}，補齊後可更快確認優先序`,'small');
+    item.appendChild(main);
+    const actions=document.createElement('div');
+    actions.className='queue-actions';
+    const add=document.createElement('button');
+    add.type='button';
+    add.textContent=m.inAttackList?'已在本週':'加入 Attack List';
+    add.disabled=m.inAttackList;
+    add.addEventListener('click',()=>addToAttack(r));
+    const detail=document.createElement('button');
+    detail.type='button';
+    detail.textContent='詳情';
+    detail.addEventListener('click',()=>openDrawer(r));
+    actions.append(add,detail);
+    item.appendChild(actions);
+    box.appendChild(item);
+  });
+}
 function why(r){const m=metric(r),reasons=[...m.relationshipSignals];if(m.consumerFit>=85)reasons.unshift('健康／零糖質消費者適配高');if(r.stores>=3)reasons.push('多店具備 Rollout Leverage');if(m.alcohol==='完全沒有酒類')reasons.push('無酒類不扣分，適合作為 Category Creation Pilot');return reasons.slice(0,5);}
 function risks(r){const m=metric(r),items=m.missing.slice(0,5).map(v=>`尚未確認：${v}`);if(m.alcohol==='完全沒有酒類')items.push('目前無酒類銷售紀錄，需確認 Category Creation 條件');if(m.coverage==='Unknown')items.push('Asahi Coverage 尚未確認');return items.length?items:['目前沒有明顯資料缺口'];}
 function field(parent,label,key,value,options){const wrap=document.createElement('label');text(wrap,label,'span');if(options){const select=document.createElement('select');select.dataset.key=key;text(select,'Unknown','option');options.filter(v=>v!=='Unknown').forEach(v=>text(select,v,'option'));select.value=unknown(value)?'Unknown':value;wrap.appendChild(select);}else if(['CEO Note','備註','NextAction'].includes(key)){const area=document.createElement('textarea');area.dataset.key=key;area.value=unknown(value)?'':value||'';wrap.appendChild(area);}else{const input=document.createElement('input');input.dataset.key=key;input.value=unknown(value)?'':value||'';wrap.appendChild(input);}parent.appendChild(wrap);}
@@ -483,6 +539,12 @@ function render(){
     $('summary-period').textContent=`已載入 ${records.length} 筆 · ${new Date().toLocaleString('zh-TW')}`;
     $('empty-state').hidden = true;
   }
+  const analyticsEmpty=$('analytics-empty'),analyticsSection=$('analytics'),advanced=document.querySelector('.advanced-analytics');
+  if(analyticsEmpty){
+    analyticsEmpty.hidden=records.length>0;
+    if(analyticsSection)analyticsSection.hidden=!records.length;
+    if(advanced)advanced.hidden=!records.length;
+  }
   renderAttention();
   renderActions();
   renderMatrix();
@@ -505,7 +567,7 @@ function renderAttention(){
   const medium=records.filter(r=>{const m=metric(r);return !high.includes(r)&&(m.attackStatus==='Waiting Reply'||(m.manualPriority==='High Priority'&&!m.targetDate));});
   const low=records.filter(r=>{const m=metric(r);return !high.includes(r)&&!medium.includes(r)&&m.healthAttackPriority==='Core Target'&&m.confidence<75;});
   if(!high.length&&!medium.length&&!low.length){
-    text(box,'目前沒有需要 CEO 介入的項目','span','attention-empty');
+    text(box,'目前沒有需要管理介入的項目','span','attention-empty');
     return;
   }
   const reasonFor=(r,tier)=>{const m=metric(r);
@@ -547,6 +609,7 @@ function exportCSV(){const calculatedHeaders=['InAttackList','RawRegion','Manual
 document.addEventListener('DOMContentLoaded',()=>{['channel-search','quick-filter','region-filter','priority-filter','health-segment-filter','health-priority-filter','owner-filter','attack-status-filter','opportunity-filter','cuisine-filter','quadrant-filter','alcohol-filter','stage-filter','confidence-filter','sort-select'].forEach(id=>$(id)?.addEventListener('input',renderTable));$('csv-file')?.addEventListener('change',e=>e.target.files[0]&&importCSV(e.target.files[0]));$('export-csv')?.addEventListener('click',exportCSV);$('reset-data')?.addEventListener('click',loadSource);$('empty-reload')?.addEventListener('click',loadSource);$('print-button')?.addEventListener('click',()=>window.print());$('drawer-close')?.addEventListener('click',closeDrawer);$('drawer-backdrop')?.addEventListener('click',closeDrawer);
   $('sync-daily')?.addEventListener('click',syncDailyData);
   $('empty-sync')?.addEventListener('click',syncDailyData);
+  $('analytics-empty-sync')?.addEventListener('click',syncDailyData);
   $('source-settings-toggle')?.addEventListener('click',()=>{const panel=$('source-settings');if(panel)panel.hidden=!panel.hidden;});
   if($('source-settings-name'))$('source-settings-name').textContent=SOURCE_CONFIG.sourceName;
   if($('source-settings-url'))$('source-settings-url').textContent=SOURCE_CONFIG.sourceUrl;
