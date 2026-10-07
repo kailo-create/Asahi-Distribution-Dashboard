@@ -28,6 +28,51 @@ estimated monthly sales are manual estimates. The dashboard only sums entered
 estimates for active candidates and does not apply an assumed win probability,
 so these totals are unweighted and should be treated as planning inputs.
 
+Revenue is shown in two separate measures: existing-customer `近12月M` values
+are summed as provided and labeled with the source unit `M` (no currency or
+magnitude conversion), while new-development Pipeline estimates remain
+`NT$/month`. These figures have different periods and units and must not be
+added together. Revenue coverage is shown alongside the historical total.
+
+The executive summary also reports the current priority opportunity pool,
+completion of its key qualification fields, attack-list action-plan coverage
+(owner, target date, and next action), and overdue open actions. Pipeline
+stage cards show current active-candidate counts and the sum of entered
+unweighted monthly estimates by stage. The static dashboard does not retain
+weekly Pipeline snapshots, so it cannot report stage movement, newly added
+leads, or week-over-week changes; those trends require a persisted history.
+
+The `Asahi 客戶池初篩` section contains a dated first-pass snapshot of 55
+outlets from the first 500 rows available in the linked BigQuery Connected
+Sheets preview. It ranks explicit beer occasions (A), meal-pairing restaurant
+types (B), and channels requiring an occasion check (C), while excluding
+outlets not marked active and supplying, rows marked dropped, and obvious
+staff/event/central-kitchen records. These are prospects to qualify, not
+confirmed beer opportunities. Other preview rows are held out, not presumed
+unfit. The dashboard is static and the private Connected Sheets preview
+requires Google authentication, so the shortlist is not live-synced; its source
+links and CSV export are provided for review.
+
+The Flask channel form can request a Cuisine Type suggestion from OpenAI. Set
+`OPENAI_API_KEY` in the server environment (and optionally `OPENAI_MODEL`, which
+defaults to `gpt-4o-mini`) before starting the app. The form sends the business
+name, address, Google Maps category, and pasted menu/about text to OpenAI for
+classification. Maps, website, and Instagram URLs are retained as source
+references but are not fetched or read by the model; paste relevant excerpts
+when available. Suggestions at confidence 70 or higher prefill the formal
+Cuisine Type; lower-confidence results stay suggestions for manual review.
+Classification outputs, sources, and timestamps are stored with the channel.
+The Flask app currently has no user authentication; keep it on a trusted
+environment and do not expose the API-backed app publicly without adding
+authentication and usage controls. Never commit the API key to the repository.
+
+For a local run on macOS/Linux:
+
+```sh
+export OPENAI_API_KEY="your-key"
+python3 app.py
+```
+
 ## Run locally
 
 1. Create a virtual environment (optional):

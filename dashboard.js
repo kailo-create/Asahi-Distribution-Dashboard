@@ -193,6 +193,19 @@ let records = [], currentRecord = null, funnelFilter = '', actionView = 'attack'
 const text = (parent, value, tag='span', cls='') => { const el=document.createElement(tag); if(cls) el.className=cls; el.textContent=value ?? ''; parent.appendChild(el); return el; };
 const num = value => { const raw=String(value ?? '').replace(/[,，$￥\s]/g,''); const suffix=raw.slice(-1).toUpperCase(); const multiplier=suffix==='K'?1000:suffix==='M'?1000000:1; const n=Number(suffix==='K'||suffix==='M'?raw.slice(0,-1):raw); return Number.isFinite(n)?n*multiplier:0; };
 const unknown = value => !String(value ?? '').trim() || ['unknown','unk','未知','不明','—','-'].includes(String(value).trim().toLowerCase());
+function sourceRevenueM(r){
+  const raw=r.rawData['近12月M'];
+  if(unknown(raw))return null;
+  const parsed=Number(String(raw).replace(/[,\s，]/g,'').replace(/M$/i,''));
+  return Number.isFinite(parsed)?parsed:null;
+}
+function formatSourceRevenueM(r){
+  const revenue=sourceRevenueM(r);
+  return revenue===null?'未提供':revenue.toLocaleString('zh-TW',{maximumFractionDigits:2});
+}
+function formatExpectedMonthlyRevenue(m){
+  return m.expectedMonthlySales===null?'未估算':`NT$ ${m.expectedMonthlySales.toLocaleString('zh-TW')}`;
+}
 const escapeCsv = value => { const s=String(value ?? ''); return /[",\r\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s; };
 function parseCSV(input) { const rows=[]; let row=[], cell='', quoted=false; for(let i=0;i<input.length;i++){const ch=input[i],next=input[i+1]; if(ch==='"'&&quoted&&next==='"'){cell+='"';i++;} else if(ch==='"') quoted=!quoted; else if(ch===','&&!quoted){row.push(cell);cell='';} else if((ch==='\n'||ch==='\r')&&!quoted){if(ch==='\r'&&next==='\n')i++;row.push(cell);if(row.some(v=>v.trim()))rows.push(row);row=[];cell='';} else cell+=ch;} if(cell||row.length){row.push(cell);rows.push(row);} return rows; }
 function loadQual() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}'); } catch(e) { return {}; } }
@@ -302,7 +315,7 @@ function calculate() {
     r.regionDisplay=manualRegion||r.region;
     r.calculatedMetrics={consumerFit:fit.score,consumerFitLabel:fit.label,commercialScale:Math.round(commercial),categoryCreation:Math.round(categoryCreation),rightToWin:Math.round(right),showcaseValue:Math.round(showcase),strategicPotential:Math.max(0,Math.min(100,potential)),executionReadiness:Math.max(0,Math.min(100,readiness)),opportunityType:type,quadrant,health,healthChannelFit:healthInfo.fit,autoHealthSegment:healthInfo.segment,manualHealthSegment:manualHealth,healthSegment,healthAttackPriority:healthPriority||healthInfo.priority,healthFitReason:manualHealth?'人工指定，優先於系統判定':healthInfo.reason,healthSignals:healthInfo.signals,confidence,confidenceLabel:confidence>=75?'High':confidence>=45?'Medium':'Low',missing,stage,alcohol:alcohol||'Unknown',coverage:coverage||'Unknown',nextAction:unknown(q['NextAction'])?'':q['NextAction'],autoCuisineType:cuisine.type,cuisineType,cuisineTypeDisplay:cuisineType,cuisineSource:manualCuisine?'Manual':cuisine.type==='Unknown'?'Unknown':'Auto',cuisineConfidence:cuisine.confidence,cuisineSignals:cuisine.signals,cuisineReason:manualCuisine?'人工指定，優先於系統判定':cuisine.reason||'沒有命中明確關鍵字',manualCuisineType:manualCuisine,manualPriority,manualRegion,regionDisplay:r.regionDisplay,owner:unknown(q.Owner)?'':q.Owner,targetDate:unknown(q['Target Date'])?'':q['Target Date'],attackStatus:unknown(q['Attack Status'])?'Not Started':q['Attack Status'],ceoNote:unknown(q['CEO Note'])?'':q['CEO Note'],blockerReason:unknown(q['Blocker Reason'])?'':q['Blocker Reason'],manualExecutionDecision:unknown(q['Execution Decision'])?'Auto':q['Execution Decision'],inAttackList:q['In Attack List']==='Yes'||(['Must Attack','High Priority','Medium Priority','Watch'].includes(manualPriority)&&manualPriority!=='Not Now'),relationshipSignals:[]};
     const execution=executionAssessment(r);
-    Object.assign(r.calculatedMetrics,{executionDecision:execution.decision,executionReason:execution.reason,pipelineCandidate:execution.candidate,pipelineTargetStores:execution.targetStores,expectedMonthlySales:execution.expectedMonthlySales});
+    Object.assign(r.calculatedMetrics,{executionDecision:execution.decision,executionReason:execution.reason,pipelineCandidate:execution.candidate,pipelineTargetStores:execution.targetStores,expectedMonthlySales:execution.expectedMonthlySales,historicalRevenue12mSourceM:sourceRevenueM(r)});
     if(health) r.calculatedMetrics.relationshipSignals.push('健康餐客群高度適配');
     if(r.stores>=3) r.calculatedMetrics.relationshipSignals.push(`${r.rawData['門店']} 家門店具 Rollout 潛力`);
     if(r.recent>0) r.calculatedMetrics.relationshipSignals.push('近30天仍有交易關係');
@@ -315,6 +328,8 @@ function calculate() {
   });
 }
 function metric(r){return r.calculatedMetrics;}
+function isOpportunityTarget(r){const m=metric(r);return ['Core Target','Test Target'].includes(m.healthAttackPriority)||m.strategicPotential>=70||m.inAttackList;}
+function localDateISO(date=new Date()){const year=date.getFullYear(),month=String(date.getMonth()+1).padStart(2,'0'),day=String(date.getDate()).padStart(2,'0');return `${year}-${month}-${day}`;}
 function populateSelect(id, values, label='所有選項') { const s=$(id); if(!s)return; const current=s.value; s.replaceChildren();const all=document.createElement('option');all.value='';all.textContent=label;s.appendChild(all); [...new Set(values.filter(Boolean))].sort().forEach(v=>{const option=document.createElement('option');option.value=v;option.textContent=v;s.appendChild(option);}); if([...s.options].some(o=>o.value===current))s.value=current; else s.value=''; }
 function populateFilters(){ populateSelect('region-filter',records.map(r=>r.regionDisplay),'所有區域');populateSelect('priority-filter',records.map(r=>metric(r).manualPriority||'未設定'),'所有人工優先級');populateSelect('opportunity-filter',records.map(r=>metric(r).opportunityType),'所有機會類型');populateSelect('cuisine-filter',records.map(r=>metric(r).cuisineTypeDisplay),'所有 Cuisine Type');populateSelect('quadrant-filter',records.map(r=>metric(r).quadrant),'所有象限');populateSelect('alcohol-filter',records.map(r=>metric(r).alcohol),'所有酒類狀態');populateSelect('stage-filter',records.map(r=>metric(r).stage),'所有 Pipeline Stage');populateSelect('confidence-filter',records.map(r=>metric(r).confidenceLabel),'所有 Data Confidence');populateSelect('health-segment-filter',records.map(r=>metric(r).healthSegment),'所有健康餐分類');populateSelect('health-priority-filter',records.map(r=>metric(r).healthAttackPriority),'所有健康攻擊優先級');populateSelect('owner-filter',records.map(r=>metric(r).owner),'所有 Owner');populateSelect('attack-status-filter',records.map(r=>metric(r).attackStatus),'所有 Attack Status');}
 function isCallToday(r){const m=metric(r);return m.quadrant==='PILOT NOW'||(m.strategicPotential>=scoringConfig.thresholds.highPotential&&m.confidence>=75);}
@@ -359,7 +374,7 @@ function badge(value, cls=''){return `<span class="data-badge ${cls}">${value}</
 function priorityClass(value){return String(value||'').toLowerCase().replace(/\s+/g,'-');}
 function recommendation(r){const m=metric(r);if(m.missing.length)return `補問：${m.missing[0]}`;if(m.quadrant==='PILOT NOW')return '安排 HQ／店點 Pilot 會議';if(m.opportunityType==='Category Creation Pilot')return '確認酒類資格，設計健康餐套餐 Pilot';return '安排需求訪談與決策者確認';}
 function actionLabel(r){const m=metric(r);if(m.quadrant==='PILOT NOW')return 'Call Today';if(m.confidence<75)return 'Qualify First';if(m.strategicPotential>=70)return 'Pilot Candidate';return 'Monitor';}
-const ATTACK_HEADERS=['客戶','Priority','Health Fit','執行判斷','預估 Pipeline','Health Segment','Cuisine / 區域','Owner','Target Date','Attack Status','Next Action','CEO Note','操作'];
+const ATTACK_HEADERS=['客戶','Priority','Health Fit','執行判斷','近12月營收（來源單位 M）','新開發 Pipeline 預估','Health Segment','Cuisine / 區域','Owner','Target Date','Attack Status','Next Action','CEO Note','操作'];
 const ATTACK_PLACEHOLDERS={'Owner':'負責人','Target Date':'選日期','NextAction':'下一步','CEO Note':'管理備註'};
 function actionEditor(parent,label,key,value,options=[],cls=''){const wrap=document.createElement('label');wrap.className=`action-editor action-cell${cls?' '+cls:''}`;text(wrap,label,'span','cell-label');if(options.length){const select=document.createElement('select');select.dataset.key=key;const values=['',...options];values.forEach(v=>text(select,v||'未設定','option'));select.value=value||'';wrap.appendChild(select);}else{const input=document.createElement('input');input.dataset.key=key;input.value=value||'';if(ATTACK_PLACEHOLDERS[key])input.placeholder=ATTACK_PLACEHOLDERS[key];if(key==='Target Date')input.type='date';wrap.appendChild(input);}parent.appendChild(wrap);return wrap;}
 function actionCell(parent,label,value,tag='span',cls=''){const cell=document.createElement('div');cell.className=`action-cell${cls?' '+cls+'-wrap':''}`;text(cell,label,'span','cell-label');text(cell,value,tag,cls);parent.appendChild(cell);return cell;}
@@ -369,8 +384,8 @@ function removeFromWeek(r){r.qualificationData['Manual Priority']='Not Now';r.qu
 function addToAttack(r, priority='High Priority'){r.qualificationData['In Attack List']='Yes';if(priority)r.qualificationData['Manual Priority']=priority;r.qualificationData['Attack Status']=r.qualificationData['Attack Status']||'Not Started';saveQual(r.name,r.qualificationData);calculate();render();showToast(`已將 ${r.name} 加入本週進攻名單`);}
 function pipelineValueLabel(m){const parts=[m.stage];if(m.pipelineTargetStores!==null)parts.push(`${m.pipelineTargetStores} 家目標店`);if(m.expectedMonthlySales!==null)parts.push(`NT$ ${m.expectedMonthlySales.toLocaleString('zh-TW')}/月`);if(parts.length===1)parts.push('待估算');return parts.join(' · ');}
 function executionBadge(parent,m){const cell=document.createElement('div');cell.className='action-cell execution-cell';text(cell,'執行判斷','span','cell-label');const badge=text(cell,m.executionDecision,'span',`execution-badge ${m.executionDecision==='可立即推進'?'ready':m.executionDecision==='待驗證'?'validate':m.executionDecision==='已完成'?'complete':'defer'}`);badge.title=m.executionReason;parent.appendChild(cell);}
-function renderAttackRow(r,table){const m=metric(r),row=document.createElement('div');row.className='next-action-card';actionCell(row,'客戶',r.name,'strong','name-cell');actionEditor(row,'Priority','Manual Priority',m.manualPriority,PRIORITIES);actionCell(row,'Health Fit',`${m.healthChannelFit}/100`,'span','health-cell');actionEditor(row,'執行判斷','Execution Decision',m.manualExecutionDecision,['Auto',...EXECUTION_DECISIONS]);actionCell(row,'預估 Pipeline',pipelineValueLabel(m),'span','pipeline-value-cell');actionCell(row,'Health Segment',m.healthSegment,'span','health-segment-cell');actionCell(row,'Cuisine / 區域',`${m.cuisineTypeDisplay} · ${m.regionDisplay}`,'span','cuisine-cell');actionEditor(row,'Owner','Owner',m.owner);actionEditor(row,'Target Date','Target Date',m.targetDate);actionEditor(row,'Attack Status','Attack Status',m.attackStatus,ATTACK_STATUSES);actionEditor(row,'Next Action','NextAction',m.nextAction||recommendation(r));actionEditor(row,'CEO Note','CEO Note',m.ceoNote);const actionsCell=document.createElement('div');actionsCell.className='action-cell action-row-buttons-cell';text(actionsCell,'操作','span','cell-label');const actions=document.createElement('div');actions.className='action-row-buttons';const save=document.createElement('button');save.className='action-save';save.textContent='儲存';save.addEventListener('click',()=>saveAction(r,row));const detail=document.createElement('button');detail.className='link-button';detail.textContent='詳情';detail.addEventListener('click',()=>openDrawer(r));const remove=document.createElement('button');remove.className='link-button danger-link';remove.textContent='移出名單';remove.addEventListener('click',()=>removeFromWeek(r));actions.append(save,detail,remove);actionsCell.appendChild(actions);row.appendChild(actionsCell);table.appendChild(row);}
-function renderRecommendationRow(r,table){const m=metric(r),row=document.createElement('div');row.className='next-action-card recommendation-row';actionCell(row,'客戶',r.name,'strong','name-cell');actionCell(row,'Priority','System Recommended','span','system-badge');actionCell(row,'Health Fit',`${m.healthChannelFit}/100`,'span','health-cell');executionBadge(row,m);actionCell(row,'預估 Pipeline',pipelineValueLabel(m),'span','pipeline-value-cell');actionCell(row,'Health Segment',m.healthSegment,'span','health-segment-cell');actionCell(row,'Cuisine / 區域',`${m.cuisineTypeDisplay} · ${m.regionDisplay}`,'span','cuisine-cell');actionCell(row,'Owner',m.owner||'未指派');actionCell(row,'Target Date',m.targetDate||'—');actionCell(row,'Attack Status',m.attackStatus);actionCell(row,'Next Action',m.nextAction||recommendation(r));actionCell(row,'CEO Note',m.ceoNote||'—');const actionsCell=document.createElement('div');actionsCell.className='action-cell action-row-buttons-cell';text(actionsCell,'操作','span','cell-label');const actions=document.createElement('div');actions.className='action-row-buttons';const add=document.createElement('button');add.className='action-save';add.textContent='加入本週';add.addEventListener('click',()=>addToAttack(r));const detail=document.createElement('button');detail.className='link-button';detail.textContent='詳情';detail.addEventListener('click',()=>openDrawer(r));actions.append(add,detail);actionsCell.appendChild(actions);row.appendChild(actionsCell);table.appendChild(row);}
+function renderAttackRow(r,table){const m=metric(r),row=document.createElement('div');row.className='next-action-card';actionCell(row,'客戶',r.name,'strong','name-cell');actionEditor(row,'Priority','Manual Priority',m.manualPriority,PRIORITIES);actionCell(row,'Health Fit',`${m.healthChannelFit}/100`,'span','health-cell');actionEditor(row,'執行判斷','Execution Decision',m.manualExecutionDecision,['Auto',...EXECUTION_DECISIONS]);actionCell(row,'近12月營收（來源 M）',formatSourceRevenueM(r),'span','revenue-cell');actionCell(row,'新開發 Pipeline 預估',pipelineValueLabel(m),'span','pipeline-value-cell');actionCell(row,'Health Segment',m.healthSegment,'span','health-segment-cell');actionCell(row,'Cuisine / 區域',`${m.cuisineTypeDisplay} · ${m.regionDisplay}`,'span','cuisine-cell');actionEditor(row,'Owner','Owner',m.owner);actionEditor(row,'Target Date','Target Date',m.targetDate);actionEditor(row,'Attack Status','Attack Status',m.attackStatus,ATTACK_STATUSES);actionEditor(row,'Next Action','NextAction',m.nextAction||recommendation(r));actionEditor(row,'CEO Note','CEO Note',m.ceoNote);const actionsCell=document.createElement('div');actionsCell.className='action-cell action-row-buttons-cell';text(actionsCell,'操作','span','cell-label');const actions=document.createElement('div');actions.className='action-row-buttons';const save=document.createElement('button');save.className='action-save';save.textContent='儲存';save.addEventListener('click',()=>saveAction(r,row));const detail=document.createElement('button');detail.className='link-button';detail.textContent='詳情';detail.addEventListener('click',()=>openDrawer(r));const remove=document.createElement('button');remove.className='link-button danger-link';remove.textContent='移出名單';remove.addEventListener('click',()=>removeFromWeek(r));actions.append(save,detail,remove);actionsCell.appendChild(actions);row.appendChild(actionsCell);table.appendChild(row);}
+function renderRecommendationRow(r,table){const m=metric(r),row=document.createElement('div');row.className='next-action-card recommendation-row';actionCell(row,'客戶',r.name,'strong','name-cell');actionCell(row,'Priority','System Recommended','span','system-badge');actionCell(row,'Health Fit',`${m.healthChannelFit}/100`,'span','health-cell');executionBadge(row,m);actionCell(row,'近12月營收（來源 M）',formatSourceRevenueM(r),'span','revenue-cell');actionCell(row,'新開發 Pipeline 預估',pipelineValueLabel(m),'span','pipeline-value-cell');actionCell(row,'Health Segment',m.healthSegment,'span','health-segment-cell');actionCell(row,'Cuisine / 區域',`${m.cuisineTypeDisplay} · ${m.regionDisplay}`,'span','cuisine-cell');actionCell(row,'Owner',m.owner||'未指派');actionCell(row,'Target Date',m.targetDate||'—');actionCell(row,'Attack Status',m.attackStatus);actionCell(row,'Next Action',m.nextAction||recommendation(r));actionCell(row,'CEO Note',m.ceoNote||'—');const actionsCell=document.createElement('div');actionsCell.className='action-cell action-row-buttons-cell';text(actionsCell,'操作','span','cell-label');const actions=document.createElement('div');actions.className='action-row-buttons';const add=document.createElement('button');add.className='action-save';add.textContent='加入本週';add.addEventListener('click',()=>addToAttack(r));const detail=document.createElement('button');detail.className='link-button';detail.textContent='詳情';detail.addEventListener('click',()=>openDrawer(r));actions.append(add,detail);actionsCell.appendChild(actions);row.appendChild(actionsCell);table.appendChild(row);}
 function renderActions(){const box=$('next-actions');box.replaceChildren();const controls=document.createElement('div');controls.className='attack-controls';const attackTab=document.createElement('button');attackTab.className=actionView==='attack'?'active':'';attackTab.textContent='本週進攻名單';attackTab.addEventListener('click',()=>{actionView='attack';renderActions();});const recTab=document.createElement('button');recTab.className=actionView==='recommendation'?'active':'';recTab.textContent='系統推薦名單';recTab.addEventListener('click',()=>{actionView='recommendation';renderActions();});const picker=document.createElement('select');const defaultOption=document.createElement('option');defaultOption.value='';defaultOption.textContent='新增進攻客戶…';picker.appendChild(defaultOption);records.forEach(r=>{const option=document.createElement('option');option.value=r.name;option.textContent=r.name;picker.appendChild(option);});picker.addEventListener('change',()=>{const r=records.find(item=>item.name===picker.value);if(r)addToAttack(r);picker.value='';});controls.append(attackTab,recTab,picker);box.appendChild(controls);const rows=actionView==='attack'?[...records].filter(r=>metric(r).inAttackList&&metric(r).manualPriority!=='Not Now'&&metric(r).attackStatus!=='Paused').sort((a,b)=>actionRank(b)-actionRank(a)):[...records].sort((a,b)=>actionRank(b)-actionRank(a)).slice(0,10);const wrap=document.createElement('div');wrap.className='attack-table-wrap';const table=document.createElement('div');table.className='action-table';const header=document.createElement('div');header.className='action-table-header';ATTACK_HEADERS.forEach(label=>text(header,label,'div','action-table-head'));table.appendChild(header);if(!rows.length){const empty=document.createElement('div');empty.className='action-table-empty-row';text(empty,actionView==='attack'?'目前尚未加入本週進攻客戶。請從系統推薦名單或客戶資料庫加入。':'目前沒有符合條件的系統推薦客戶。','span');table.appendChild(empty);}else{rows.forEach(r=>actionView==='attack'?renderAttackRow(r,table):renderRecommendationRow(r,table));}wrap.appendChild(table);box.appendChild(wrap);}
 function renderMatrix(){const box=$('opportunity-matrix');box.querySelectorAll('.account-dot').forEach(e=>e.remove());records.forEach(r=>{const m=metric(r),dot=document.createElement('button');dot.className=`account-dot ${m.opportunityType.replace(/\s/g,'-')}`;dot.title=`${r.name} · Strategic ${m.strategicPotential} · Readiness ${m.executionReadiness}`;dot.style.left=`${Math.max(3,Math.min(97,m.executionReadiness))}%`;dot.style.bottom=`${Math.max(3,Math.min(97,m.strategicPotential))}%`;dot.style.width=dot.style.height=`${Math.max(10,Math.min(28,10+r.stores*1.5))}px`;dot.addEventListener('click',()=>openDrawer(r));box.appendChild(dot);});}
 function renderFunnel(){
@@ -458,7 +473,7 @@ function openDrawer(r){
   c.appendChild(riskList);
   text(c,'客戶概況','h3');
   const dl=document.createElement('dl');
-  [['門店',r.rawData['門店']],['原始區域',r.region],['顯示區域',m.regionDisplay],['Cuisine Type',m.cuisineTypeDisplay],['近12月M',r.rawData['近12月M']],['近12月kg',r.rawData['近12月kg']],['元/kg',r.rawData['元/kg']],['近30天',r.rawData['近30天']],['歷史最大月營收',r.rawData['歷史最大月營收']],['Consumer Fit',`${m.consumerFit} · ${m.consumerFitLabel}`],['Commercial Scale',m.commercialScale],['Category Creation',m.categoryCreation],['Right to Win',m.rightToWin]].forEach(([k,v])=>{text(dl,k,'dt');text(dl,v||'—','dd');});
+  [['門店',r.rawData['門店']],['原始區域',r.region],['顯示區域',m.regionDisplay],['Cuisine Type',m.cuisineTypeDisplay],['既有客戶近12月營收（來源單位 M）',formatSourceRevenueM(r)],['新開發預估月銷額（NT$/月）',formatExpectedMonthlyRevenue(m)],['近12月kg',r.rawData['近12月kg']],['元/kg',r.rawData['元/kg']],['近30天',r.rawData['近30天']],['歷史最大月營收',r.rawData['歷史最大月營收']],['Consumer Fit',`${m.consumerFit} · ${m.consumerFitLabel}`],['Commercial Scale',m.commercialScale],['Category Creation',m.categoryCreation],['Right to Win',m.rightToWin]].forEach(([k,v])=>{text(dl,k,'dt');text(dl,v||'—','dd');});
   c.appendChild(dl);
 
   const allFields=[];
@@ -584,12 +599,25 @@ function render(){
   if (!records.length) {
     metricIds.forEach(id => { const el = $(id); if (el) el.textContent = '—'; });
     ['metric-run-now','metric-validate','metric-not-now','metric-pipeline-stores','metric-pipeline-coverage','metric-pipeline-monthly'].forEach(id=>{const el=$(id);if(el)el.textContent='—';});
+    ['metric-existing-revenue','metric-existing-revenue-coverage'].forEach(id=>{const el=$(id);if(el)el.textContent='—';});
+    ['metric-opportunity-pool','metric-qualified-pool','metric-qualified-pool-rate','metric-action-plan-coverage','metric-overdue-actions'].forEach(id=>{const el=$(id);if(el)el.textContent='—';});
     $('summary-period').textContent = '尚未載入資料';
     $('empty-state').hidden = false;
     $('empty-state-message').textContent = '尚未載入任何客戶資料。請同步每日資料、重新載入 Google Sheet，或匯入 CSV。';
   } else {
     const health=records.filter(r=>metric(r).health),high=records.filter(r=>metric(r).strategicPotential>=70),pilot=records.filter(r=>metric(r).quadrant==='PILOT NOW'),creation=records.filter(r=>metric(r).opportunityType==='Category Creation Pilot'),conversion=records.filter(r=>metric(r).opportunityType==='Conversion Pilot'),rollout=records.filter(r=>metric(r).opportunityType==='Strategic Rollout'),incremental=records.filter(r=>metric(r).opportunityType==='Asahi Incremental Channel'),must=records.filter(r=>metric(r).manualPriority==='Must Attack'),owned=records.filter(r=>metric(r).owner),blocked=records.filter(r=>metric(r).attackStatus==='Blocked'),waiting=records.filter(r=>metric(r).attackStatus==='Waiting Reply');
-    $('metric-health').textContent=health.length;$('metric-high-potential').textContent=high.length;$('metric-pilot-now').textContent=pilot.length;$('metric-call-today').textContent=records.filter(isCallToday).length;$('metric-category-creation').textContent=creation.length;$('metric-conversion').textContent=conversion.length;$('metric-rollout').textContent=rollout.reduce((s,r)=>s+r.stores,0);$('metric-incremental').textContent=incremental.length;$('metric-qualification').textContent=high.filter(r=>metric(r).confidence<75).length;
+    const opportunityPool=records.filter(isOpportunityTarget);
+    const qualifiedPool=opportunityPool.filter(r=>!metric(r).missing.length);
+    const activeAttack=records.filter(r=>metric(r).inAttackList&&!['Won','Lost','Paused'].includes(metric(r).attackStatus));
+    const completeActionPlan=activeAttack.filter(r=>metric(r).owner&&metric(r).targetDate&&metric(r).nextAction);
+    const today=localDateISO();
+    const overdueActions=activeAttack.filter(r=>metric(r).targetDate&&metric(r).targetDate<today);
+    $('metric-health').textContent=health.length;$('metric-high-potential').textContent=high.length;$('metric-pilot-now').textContent=pilot.length;$('metric-call-today').textContent=records.filter(isCallToday).length;$('metric-category-creation').textContent=creation.length;$('metric-conversion').textContent=conversion.length;$('metric-rollout').textContent=rollout.reduce((s,r)=>s+r.stores,0);$('metric-incremental').textContent=incremental.length;$('metric-qualification').textContent=opportunityPool.filter(r=>metric(r).missing.length).length;
+    $('metric-opportunity-pool').textContent=opportunityPool.length;
+    $('metric-qualified-pool').textContent=`${qualifiedPool.length} / ${opportunityPool.length}`;
+    $('metric-qualified-pool-rate').textContent=opportunityPool.length?`${Math.round(qualifiedPool.length/opportunityPool.length*100)}% 關鍵資格完整`:'尚無優先機會池客戶';
+    $('metric-action-plan-coverage').textContent=activeAttack.length?`${completeActionPlan.length} / ${activeAttack.length}`:'尚未建立';
+    $('metric-overdue-actions').textContent=overdueActions.length;
     ['metric-must-attack','metric-owned','metric-blocked','metric-waiting'].forEach((id,i)=>$(id).textContent=[must.length,owned.length,blocked.length,waiting.length][i]);
     const candidates=records.map(r=>metric(r)).filter(m=>m.pipelineCandidate&&m.executionDecision!=='已完成');
     const activeCandidates=candidates.filter(m=>m.executionDecision!=='暫不投入');
@@ -601,6 +629,9 @@ function render(){
     $('metric-pipeline-stores').textContent=withStoreEstimate.length?`${withStoreEstimate.reduce((sum,m)=>sum+m.pipelineTargetStores,0).toLocaleString('zh-TW')} 家`:'—';
     $('metric-pipeline-coverage').textContent=`${withMonthlyEstimate.length} / ${activeCandidates.length} 客戶`;
     $('metric-pipeline-monthly').textContent=withMonthlyEstimate.length?`NT$ ${withMonthlyEstimate.reduce((sum,m)=>sum+m.expectedMonthlySales,0).toLocaleString('zh-TW')}`:'—';
+    const existingRevenueRows=records.map(r=>sourceRevenueM(r)).filter(value=>value!==null);
+    $('metric-existing-revenue').textContent=existingRevenueRows.length?existingRevenueRows.reduce((sum,value)=>sum+value,0).toLocaleString('zh-TW',{maximumFractionDigits:2}):'—';
+    $('metric-existing-revenue-coverage').textContent=existingRevenueRows.length?`${existingRevenueRows.length} / ${records.length} 客戶`:'—';
     $('summary-period').textContent=`已載入 ${records.length} 筆 · ${new Date().toLocaleString('zh-TW')}`;
     $('empty-state').hidden = true;
   }
@@ -611,6 +642,7 @@ function render(){
     if(advanced)advanced.hidden=!records.length;
   }
   renderAttention();
+  renderPipelineStages();
   renderActions();
   renderMatrix();
   renderFunnel();
@@ -627,11 +659,12 @@ function renderAttention(){
     text(box,'尚未載入資料，無法產生 CEO Attention 項目。','span','attention-empty');
     return;
   }
-  const today=new Date().toISOString().slice(0,10);
-  const high=records.filter(r=>{const m=metric(r);return (m.manualPriority==='Must Attack'&&!m.owner)||(m.targetDate&&m.targetDate<today&&!['Won','Lost','Paused'].includes(m.attackStatus))||(m.attackStatus==='Blocked'&&!m.blockerReason);});
+  const today=localDateISO();
+  const high=records.filter(r=>{const m=metric(r);return (m.manualPriority==='Must Attack'&&!m.owner)||(m.targetDate&&m.targetDate<today&&!['Won','Lost','Paused'].includes(m.attackStatus))||m.attackStatus==='Blocked';});
   const medium=records.filter(r=>{const m=metric(r);return !high.includes(r)&&(m.attackStatus==='Waiting Reply'||(m.manualPriority==='High Priority'&&!m.targetDate));});
-  const low=records.filter(r=>{const m=metric(r);return !high.includes(r)&&!medium.includes(r)&&m.healthAttackPriority==='Core Target'&&m.confidence<75;});
-  if(!high.length&&!medium.length&&!low.length){
+  const actionPlanGaps=records.filter(r=>{const m=metric(r);return !high.includes(r)&&!medium.includes(r)&&m.inAttackList&&!['Won','Lost','Paused'].includes(m.attackStatus)&&(!m.owner||!m.targetDate||!m.nextAction);});
+  const qualificationGaps=records.filter(r=>{const m=metric(r);return !high.includes(r)&&!medium.includes(r)&&!actionPlanGaps.includes(r)&&isOpportunityTarget(r)&&m.missing.length;});
+  if(!high.length&&!medium.length&&!actionPlanGaps.length&&!qualificationGaps.length){
     text(box,'目前沒有需要管理介入的項目','span','attention-empty');
     return;
   }
@@ -639,20 +672,24 @@ function renderAttention(){
     if(tier==='high'){
       if(m.manualPriority==='Must Attack'&&!m.owner)return 'Must Attack 尚未指派負責人';
       if(m.targetDate&&m.targetDate<today)return 'Target Date 已過期';
-      return 'Blocked 但尚未填寫原因';
+      return m.blockerReason?`Blocked：${m.blockerReason}`:'Blocked，尚未填寫原因';
     }
     if(tier==='medium'){
       if(m.attackStatus==='Waiting Reply')return '等待客戶回覆中';
       return 'High Priority 尚未設定 Target Date';
     }
-    return '健康餐 Core Target 但資料不足';
+    if(tier==='action'){
+      const gaps=[!m.owner?'未指派負責人':'',!m.targetDate?'未設定目標日期':'',!m.nextAction?'未填下一步行動':''].filter(Boolean);
+      return gaps.join(' · ');
+    }
+    return `關鍵資格待確認：${m.missing.slice(0,3).join('、')}`;
   };
   const renderGroup=(title,tier,rows)=>{
     if(!rows.length)return;
     const group=document.createElement('div');
     group.className=`attention-group ${tier}`;
     text(group,title,'h4','attention-group-title');
-    rows.slice(0,8).forEach(r=>{
+    [...rows].sort((a,b)=>actionRank(b)-actionRank(a)).slice(0,8).forEach(r=>{
       const row=document.createElement('button');
       row.className='attention-item';
       row.addEventListener('click',()=>openDrawer(r));
@@ -664,7 +701,33 @@ function renderAttention(){
   };
   renderGroup('高優先','high',high);
   renderGroup('中優先','medium',medium);
-  renderGroup('低優先','low',low);
+  renderGroup('進攻名單待補作戰欄位','action',actionPlanGaps);
+  renderGroup('優先機會待補關鍵資料','low',qualificationGaps);
+}
+function renderPipelineStages(){
+  const box=$('pipeline-stage-breakdown');
+  if(!box)return;
+  box.replaceChildren();
+  const rows=records.filter(r=>{const m=metric(r);return m.pipelineCandidate&&!['暫不投入','已完成'].includes(m.executionDecision);});
+  if(!rows.length){
+    text(box,'目前沒有符合條件的活躍 Pipeline 客戶。','p','subtext');
+    return;
+  }
+  const stages=['Universe','Health Channel Identified','High Potential','Qualified','Pilot Candidate','Pilot Live','Rollout'];
+  const groups=new Map(stages.map(stage=>[stage,[]]));
+  rows.forEach(r=>{
+    const stage=groups.has(metric(r).stage)?metric(r).stage:'Universe';
+    groups.get(stage).push(r);
+  });
+  stages.filter(stage=>groups.get(stage).length).forEach(stage=>{
+    const stageRows=groups.get(stage),withEstimate=stageRows.filter(r=>metric(r).expectedMonthlySales!==null);
+    const row=document.createElement('div');
+    row.className='pipeline-stage-row';
+    text(row,stage,'strong','pipeline-stage-name');
+    text(row,`${stageRows.length} 家`,'span','pipeline-stage-count');
+    text(row,withEstimate.length?`NT$ ${withEstimate.reduce((sum,r)=>sum+metric(r).expectedMonthlySales,0).toLocaleString('zh-TW')}/月 · ${withEstimate.length} 家有估值`:`尚無估值 · 0/${stageRows.length} 家`,'span','pipeline-stage-value');
+    box.appendChild(row);
+  });
 }
 function importRows(rows){const header=rows.shift()?.map(v=>v.trim()), names=header||[];if(!header||!RAW_HEADERS.every(h=>names.includes(h)))throw Error('CSV 至少必須包含原始客戶欄位');const saved=loadQual(),rawIndex=RAW_HEADERS.map(h=>names.indexOf(h)),qualIndex=QUAL_HEADERS.map(h=>names.indexOf(h));records=rows.map(row=>{const raw=rawIndex.map(i=>row[i]??'');const imported=Object.fromEntries(QUAL_HEADERS.map((h,i)=>[h,qualIndex[i]>=0?row[qualIndex[i]]||'Unknown':'Unknown']));return model(raw,{...imported,...(saved[raw[0]]||{})});}).filter(r=>r.name);render();}
 function importCSV(file){const reader=new FileReader();reader.onload=()=>{try{importRows(parseCSV(String(reader.result).replace(/^\uFEFF/,'')));$('import-status').className='notice success';$('import-status').textContent=`載入成功：${records.length} 筆 CSV 資料；人工 Qualification 已保留`;$('source-label').textContent='CSV 匯入';$('last-updated').textContent=new Date().toLocaleString('zh-TW');}catch(e){$('import-status').className='notice error';$('import-status').textContent=`載入失敗：${e.message}。請確認 CSV 欄位完整。`;}};reader.readAsText(file);}
@@ -679,7 +742,8 @@ function renderTable(){
     cell(m.inAttackList?'是':'否','span',`attack-state ${m.inAttackList?'is-attack':''}`);
     cell(m.manualPriority||'未設定','span',`priority-badge ${priorityClass(m.manualPriority)}`);
     cell(m.executionDecision,'span',`execution-badge ${m.executionDecision==='可立即推進'?'ready':m.executionDecision==='待驗證'?'validate':m.executionDecision==='已完成'?'complete':'defer'}`);
-    cell(pipelineValueLabel(m),'span','pipeline-value-cell');
+    cell(formatSourceRevenueM(r),'span','revenue-cell');
+    cell(formatExpectedMonthlyRevenue(m),'span','pipeline-value-cell');
     cell(m.healthSegment,'span','health-cell');
     cell(`${m.healthChannelFit}/100`,'span',`score-cell ${m.healthChannelFit>=70?'score-high':'score-mid'}`);
     cell(`${m.cuisineTypeDisplay} · ${m.cuisineSource}`,'span',`cuisine-badge cuisine-${m.cuisineConfidence.toLowerCase()}`);
