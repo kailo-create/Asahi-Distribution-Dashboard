@@ -818,6 +818,9 @@ body { background: var(--bg); color: var(--text); font-size: 14px; }
 .pill-tabs a { padding:8px 15px; border-radius:7px; color:var(--muted); text-decoration:none; font-size:.82rem; font-weight:700; }
 .pill-tabs a.active, .pill-tabs a:hover { background:var(--primary); color:#fff; }
 .layout { width:min(100% - 32px,1480px); gap:14px; padding-bottom:32px; }
+.dashboard-page { display:grid; gap:14px; align-content:start; }
+.dashboard-page[hidden] { display:none !important; }
+.pill-tabs { position:sticky; top:0; z-index:20; }
 .panel { border:1px solid var(--border); border-radius:10px; box-shadow:var(--shadow); padding:18px; }
 .hero { background:#fff; }
 .hero-copy { line-height:1.55; }

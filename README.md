@@ -10,6 +10,11 @@ data as `rawData`, stores manually qualified alcohol/channel information in
 `localStorage`, and derives separate `Strategic Potential` and
 `Execution Readiness` scores.
 
+The dashboard is split into five tabbed pages—decision summary, Asahi
+customer-pool screening, next actions, opportunity analysis, and customer
+database—to keep each work area focused while preserving the existing
+sections and anchors.
+
 The scoring configuration is at the top of `dashboard.js` in
 `scoringConfig`. The current CSV can contain the original ten columns; optional
 qualification columns are accepted when present. Use the dashboard's
