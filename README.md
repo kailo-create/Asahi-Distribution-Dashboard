@@ -42,16 +42,19 @@ unweighted monthly estimates by stage. The static dashboard does not retain
 weekly Pipeline snapshots, so it cannot report stage movement, newly added
 leads, or week-over-week changes; those trends require a persisted history.
 
-The `Asahi 客戶池初篩` section contains a dated first-pass snapshot of 55
-outlets from the first 500 rows available in the linked BigQuery Connected
-Sheets preview. It ranks explicit beer occasions (A), meal-pairing restaurant
-types (B), and channels requiring an occasion check (C), while excluding
-outlets not marked active and supplying, rows marked dropped, and obvious
-staff/event/central-kitchen records. These are prospects to qualify, not
-confirmed beer opportunities. Other preview rows are held out, not presumed
-unfit. The dashboard is static and the private Connected Sheets preview
-requires Google authentication, so the shortlist is not live-synced; its source
-links and CSV export are provided for review.
+The `Asahi 客戶池初篩` section contains a dated first-pass snapshot of 526
+outlets from the full 4,914-row BigQuery Connected Sheets export, merged with
+the existing shortlist by `store_id` so existing entries are retained without
+duplicates. It ranks explicit beer occasions (A), meal-pairing restaurant
+types (B), and channels requiring an occasion check (C), while applying the
+specified active/supplying/not-dropped gate and excluding obvious
+staff/event/central-kitchen records. The snapshot includes 43 rows marked
+`activeState=notActive` for manual confirmation and 4 name-classified rows
+with blank store type for review. These are prospects to qualify, not confirmed
+beer opportunities. Other rows are held out, not presumed unfit. The dashboard
+is static and the private Connected Sheets source requires Google
+authentication, so the shortlist is not live-synced; source-row links and CSV
+export are provided for review.
 
 The Flask channel form can request a Cuisine Type suggestion from OpenAI. Set
 `OPENAI_API_KEY` in the server environment (and optionally `OPENAI_MODEL`, which

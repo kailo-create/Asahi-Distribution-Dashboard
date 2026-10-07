@@ -4,7 +4,7 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="description" content="菜蟲農食 × Asahi Zero-Sugar Health Channel Opportunity Engine">
   <title>Asahi Zero-Sugar Channel Command Center</title>
-  <link rel="stylesheet" href="style.css?v=run-ready-v14-customer-pool">
+  <link rel="stylesheet" href="style.css?v=run-ready-v14-full-pool">
 </head>
 <body>
 <header class="topbar">
@@ -27,18 +27,18 @@
   <section id="asahi-pool" class="panel asahi-pool-panel">
     <div class="panel-header asahi-pool-heading">
       <div>
-        <p class="eyebrow">First-pass channel fit · Google Sheets preview</p>
+        <p class="eyebrow">First-pass channel fit · Full customer export</p>
         <h2>Asahi 客戶池初篩</h2>
-        <p class="subtext">以客戶池預覽中的 500 筆門店資料做第一輪通路適配判斷。候選只代表值得業務確認，不代表已確認酒類資格、啤酒需求或採購意願；原始客戶庫不會被覆蓋。</p>
+        <p class="subtext">依完整 4,914 筆客戶資料做第一輪通路適配判斷。候選只代表值得業務確認，不代表已確認酒類資格、啤酒需求或採購意願；原始客戶庫不會被覆蓋。</p>
       </div>
       <div class="asahi-pool-actions">
-        <a class="secondary pool-source-link" href="https://docs.google.com/spreadsheets/d/1Ubzqq_EKfJ8TDvo7KEBRG4KV4anXROxScoZAhPfS2gA/edit?gid=256360687#gid=256360687" target="_blank" rel="noopener noreferrer">開啟來源試算表</a>
+        <a class="secondary pool-source-link" href="https://docs.google.com/spreadsheets/d/1Ubzqq_EKfJ8TDvo7KEBRG4KV4anXROxScoZAhPfS2gA/edit?gid=808112332#gid=808112332" target="_blank" rel="noopener noreferrer">開啟來源試算表</a>
         <button id="export-asahi-pool" class="secondary" type="button">匯出候選名單</button>
       </div>
     </div>
     <div class="pool-snapshot-notice" role="note">
-      <strong>資料快照：2026/10/07 · 預覽前 500 筆</strong>
-      <span>試算表完整資料集較大，但瀏覽器預覽僅提供前 500 筆。此初篩是固定快照；新增或變更資料後需重新整理名單，避免誤以為已即時同步。</span>
+      <strong>資料快照：2026/10/07 · 完整 4,914 筆 · 保留既有名單並依店號去重</strong>
+      <span>初篩名單含 43 家 activeState=notActive，依資格閘門保留並待人工確認；4 家店型空白、依店名線索分類者亦請複核。固定快照，不代表酒類資格、啤酒需求或採購意願已確認。</span>
     </div>
     <div class="pool-summary-grid">
       <article class="tier-a"><span>A｜直接啤酒情境</span><strong id="pool-count-a">—</strong><small>居酒屋、餐酒、串燒等</small></article>
@@ -167,6 +167,6 @@
   <section class="panel model-note"><div class="panel-header"><div><p class="eyebrow">Qualification workflow</p><h2>Data model V1</h2><p class="subtext">Unknown 不等於 0；資料不足會顯示 Needs Qualification，未臆測酒類、決策者或營運條件。</p></div><span class="strategy-badge">Raw → Qualification → Calculated</span></div></section>
 </main>
 <aside id="detail-drawer" class="drawer" aria-hidden="true"><button id="drawer-close" class="drawer-close" aria-label="Close">×</button><div id="drawer-content"></div></aside><div id="drawer-backdrop" class="drawer-backdrop"></div>
-<script src="dashboard.js?v=run-ready-v14-customer-pool"></script>
-<script src="asahi-pool.js?v=run-ready-v14-customer-pool"></script>
+<script src="dashboard.js?v=run-ready-v14-full-pool"></script>
+<script src="asahi-pool.js?v=run-ready-v14-full-pool"></script>
 </body></html>
