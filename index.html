@@ -4,7 +4,7 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="description" content="菜蟲農食 × Asahi Zero-Sugar Health Channel Opportunity Engine">
   <title>Asahi Zero-Sugar Channel Command Center</title>
-  <link rel="stylesheet" href="style.css?v=analytics-v13">
+  <link rel="stylesheet" href="style.css?v=run-ready-v14">
 </head>
 <body>
 <header class="topbar">
@@ -35,6 +35,17 @@
       <article class="summary-kpi warning"><span>需要補資料</span><strong id="metric-qualification">0</strong><small>先 Qualification 才能判斷</small></article>
     </div>
     <div class="secondary-metrics"><span>健康餐客戶 <b id="metric-health">0</b></span><span>高潛力 <b id="metric-high-potential">0</b></span><span>Category Creation <b id="metric-category-creation">0</b></span><span>Conversion <b id="metric-conversion">0</b></span><span>Rollout 門店 <b id="metric-rollout">0</b></span><span>Asahi 新通路 <b id="metric-incremental">0</b></span></div>
+    <section class="pipeline-forecast" aria-label="執行判斷與 Pipeline 預估">
+      <div class="pipeline-forecast-heading"><div><h3>執行判斷與預估 Pipeline</h3><p>候選範圍：Attack List、健康 Core/Test Target 或策略潛力 ≥70。預估值只加總人工填寫資料，未按成交機率加權。</p></div></div>
+      <div class="pipeline-forecast-grid">
+        <article><span>可立即推進</span><strong id="metric-run-now">—</strong></article>
+        <article><span>待驗證條件</span><strong id="metric-validate">—</strong></article>
+        <article><span>暫不投入</span><strong id="metric-not-now">—</strong></article>
+        <article><span>已填目標門店</span><strong id="metric-pipeline-stores">—</strong></article>
+        <article><span>有月銷額估算</span><strong id="metric-pipeline-coverage">—</strong></article>
+        <article><span>未加權預估月銷額 (NT$)</span><strong id="metric-pipeline-monthly">—</strong></article>
+      </div>
+    </section>
   </section>
 
   <section class="panel import-panel">
@@ -80,13 +91,13 @@
 
   <section id="customer-database" class="panel mapping-panel">
     <div class="panel-header strategy-heading"><div><p class="eyebrow">客戶資料</p><h2>客戶機會資料庫</h2></div>
-      <div class="table-tools"><input id="channel-search" type="search" placeholder="搜尋客戶、類型或狀態"><select id="quick-filter" aria-label="快速篩選"><option value="">快速篩選</option><option value="attack-list">本週進攻名單</option><option value="must-attack">Must Attack</option><option value="health-core">健康餐 Core Target</option><option value="health-fit">高 Health Fit</option><option value="no-owner">沒有 Owner</option><option value="waiting">等待回覆</option><option value="blocked">Blocked</option><option value="missing">資料不足</option><option value="not-now">Not Now</option><option value="call">今天優先處理</option><option value="pilot">只看 Pilot Now</option><option value="potential">只看高潛力客戶</option></select><select id="region-filter"><option value="">所有區域</option></select><select id="priority-filter"><option value="">所有人工優先級</option></select><select id="health-segment-filter"><option value="">所有健康餐分類</option></select><select id="health-priority-filter"><option value="">所有健康攻擊優先級</option></select><select id="owner-filter"><option value="">所有 Owner</option></select><select id="attack-status-filter"><option value="">所有 Attack Status</option></select><select id="cuisine-filter"><option value="">所有 Cuisine Type</option></select><select id="opportunity-filter"><option value="">所有機會類型</option></select><select id="confidence-filter"><option value="">所有資料可信度</option></select><select id="sort-select"><option value="next">依優先行動</option><option value="potential">依策略潛力</option><option value="readiness">依執行準備度</option><option value="stores">依門店</option><option value="revenue">依近12月M</option><option value="name">依客戶</option></select></div>
+      <div class="table-tools"><input id="channel-search" type="search" placeholder="搜尋客戶、類型或狀態"><select id="quick-filter" aria-label="快速篩選"><option value="">快速篩選</option><option value="attack-list">本週進攻名單</option><option value="must-attack">Must Attack</option><option value="health-core">健康餐 Core Target</option><option value="health-fit">高 Health Fit</option><option value="no-owner">沒有 Owner</option><option value="waiting">等待回覆</option><option value="blocked">Blocked</option><option value="missing">資料不足</option><option value="not-now">Not Now</option><option value="run-now">可立即推進</option><option value="validate">待驗證</option><option value="execution-not-now">暫不投入</option><option value="call">今天優先處理</option><option value="pilot">只看 Pilot Now</option><option value="potential">只看高潛力客戶</option></select><select id="region-filter"><option value="">所有區域</option></select><select id="priority-filter"><option value="">所有人工優先級</option></select><select id="health-segment-filter"><option value="">所有健康餐分類</option></select><select id="health-priority-filter"><option value="">所有健康攻擊優先級</option></select><select id="owner-filter"><option value="">所有 Owner</option></select><select id="attack-status-filter"><option value="">所有 Attack Status</option></select><select id="cuisine-filter"><option value="">所有 Cuisine Type</option></select><select id="opportunity-filter"><option value="">所有機會類型</option></select><select id="confidence-filter"><option value="">所有資料可信度</option></select><select id="sort-select"><option value="next">依優先行動</option><option value="potential">依策略潛力</option><option value="readiness">依執行準備度</option><option value="stores">依門店</option><option value="revenue">依近12月M</option><option value="name">依客戶</option></select></div>
     </div>
-    <div class="table-wrap"><table><thead><tr><th>客戶</th><th>Attack</th><th>Priority</th><th>Health Segment</th><th>Health Fit</th><th>Cuisine Type</th><th>區域</th><th>Strategic Potential</th><th>Execution Readiness</th><th>Data Confidence</th><th>Next Action</th><th>操作</th></tr></thead><tbody id="customer-table"></tbody></table></div>
+    <div class="table-wrap"><table><thead><tr><th>客戶</th><th>Attack</th><th>Priority</th><th>執行判斷</th><th>預估 Pipeline</th><th>Health Segment</th><th>Health Fit</th><th>Cuisine Type</th><th>區域</th><th>Strategic Potential</th><th>Execution Readiness</th><th>Data Confidence</th><th>Next Action</th><th>操作</th></tr></thead><tbody id="customer-table"></tbody></table></div>
   </section>
 
   <section class="panel model-note"><div class="panel-header"><div><p class="eyebrow">Qualification workflow</p><h2>Data model V1</h2><p class="subtext">Unknown 不等於 0；資料不足會顯示 Needs Qualification，未臆測酒類、決策者或營運條件。</p></div><span class="strategy-badge">Raw → Qualification → Calculated</span></div></section>
 </main>
 <aside id="detail-drawer" class="drawer" aria-hidden="true"><button id="drawer-close" class="drawer-close" aria-label="Close">×</button><div id="drawer-content"></div></aside><div id="drawer-backdrop" class="drawer-backdrop"></div>
-<script src="dashboard.js?v=analytics-v13"></script>
+<script src="dashboard.js?v=run-ready-v14"></script>
 </body></html>
