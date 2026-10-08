@@ -49,13 +49,19 @@ leads, or week-over-week changes; those trends require a persisted history.
 
 The next-actions page has a separate strategy addendum for the proposed
 12-independent-procurement-unit interview, up-to-6 paid-pilot, and decision-gate
-workflow. It is advisory only: it does not change qualification fields, scores,
-filters, or the Attack List. Unknown qualification evidence remains unknown.
+workflow. It identifies the owner and approval roles that management must
+assign, defines weekly evidence to review, and requires pilot economics and
+channel-specific replenishment windows to be agreed before launch. It is
+advisory only: it does not change qualification fields, scores, filters, or the
+Attack List. Unknown qualification evidence remains unknown; owners, dates, and
+numeric success thresholds are not fabricated.
 
 The `Asahi 客戶池初篩` section contains a dated first-pass snapshot of 526
-outlets from the full 4,914-row BigQuery Connected Sheets export, merged with
-the existing shortlist by `store_id` so existing entries are retained without
-duplicates. It ranks explicit beer occasions (A), meal-pairing restaurant
+outlets (A 38 / B 184 / C 304) from the full 4,914-row BigQuery Connected
+Sheets export, merged with the existing shortlist by `store_id` so existing
+entries are retained without duplicates. The 525 / B 183 figures previously
+reported were pre-merge intermediate counts; the published deduplicated list
+is the authoritative snapshot. It ranks explicit beer occasions (A), meal-pairing restaurant
 types (B), and channels requiring an occasion check (C), while applying the
 specified active/supplying/not-dropped gate and excluding obvious
 staff/event/central-kitchen records. The snapshot includes 43 rows marked

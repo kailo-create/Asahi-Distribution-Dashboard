@@ -837,6 +837,11 @@ body { background: var(--bg); color: var(--text); font-size: 14px; }
 .strategy-addendum-grid p { margin:0 0 9px; line-height:1.55; }
 .strategy-addendum-grid small { color:var(--muted); line-height:1.5; }
 .addendum-step { color:#9c5b19; font-size:.72rem; font-weight:800; letter-spacing:.04em; }
+.strategy-operating-brief { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:12px; }
+.strategy-operating-brief article { min-width:0; padding:14px; border:1px solid #e8d8c4; border-radius:8px; background:#fff7eb; }
+.strategy-operating-brief h3 { margin:0 0 7px; font-size:.92rem; }
+.strategy-operating-brief p { margin:0 0 8px; line-height:1.55; }
+.strategy-operating-brief small { color:var(--muted); line-height:1.5; }
 .mapping-panel table { min-width:100%; }
 .mapping-panel th { background:#f1f5f2; color:#56665e; font-size:.72rem; }
 .mapping-panel td, .mapping-panel th { padding:10px 9px; border-bottom:1px solid #edf1ee; }
@@ -860,6 +865,7 @@ body { background: var(--bg); color: var(--text); font-size: 14px; }
   .pill-tabs a { flex:0 0 auto; }
   .strategy-addendum-heading { flex-direction:column; }
   .strategy-addendum-grid { grid-template-columns:1fr; }
+  .strategy-operating-brief { grid-template-columns:1fr; }
 }
 
 .attack-controls{display:flex;gap:6px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
