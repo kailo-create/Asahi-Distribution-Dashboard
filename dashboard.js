@@ -451,6 +451,58 @@ function renderQueue(){
 function why(r){const m=metric(r),reasons=[...m.relationshipSignals];if(m.consumerFit>=85)reasons.unshift('健康／零糖質消費者適配高');if(r.stores>=3)reasons.push('多店具備 Rollout Leverage');if(m.alcohol==='完全沒有酒類')reasons.push('無酒類不扣分，適合作為 Category Creation Pilot');return reasons.slice(0,5);}
 function risks(r){const m=metric(r),items=m.missing.slice(0,5).map(v=>`尚未確認：${v}`);if(m.alcohol==='完全沒有酒類')items.push('目前無酒類銷售紀錄，需確認 Category Creation 條件');if(m.coverage==='Unknown')items.push('Asahi Coverage 尚未確認');return items.length?items:['目前沒有明顯資料缺口'];}
 function field(parent,label,key,value,options){const wrap=document.createElement('label');text(wrap,label,'span');if(options){const select=document.createElement('select');select.dataset.key=key;text(select,'Unknown','option');options.filter(v=>v!=='Unknown').forEach(v=>text(select,v,'option'));select.value=unknown(value)?(key==='Execution Decision'?'Auto':'Unknown'):value;wrap.appendChild(select);}else if(['CEO Note','備註','NextAction'].includes(key)){const area=document.createElement('textarea');area.dataset.key=key;area.value=unknown(value)?'':value||'';wrap.appendChild(area);}else{const input=document.createElement('input');input.dataset.key=key;input.value=unknown(value)?'':value||'';if(key==='Target Date')input.type='date';if(['Pipeline Target Stores','Expected Monthly Sales (NTD)'].includes(key)){input.type='number';input.min='0';input.step=key==='Pipeline Target Stores'?'1':'1000';}wrap.appendChild(input);}parent.appendChild(wrap);}
+function asahiPoolQualificationKey(customerId,name){
+  const saved=loadQual();
+  const byId=Object.entries(saved).find(([,data])=>data?.['CustomerId']===customerId);
+  if(byId)return byId[0];
+  if(!saved[name]||!saved[name]['CustomerId']||saved[name]['CustomerId']===customerId)return name;
+  return `${name} [${customerId}]`;
+}
+function getAsahiPoolQualification(customer){
+  const key=asahiPoolQualificationKey(customer.id,customer.name);
+  const saved=loadQual();
+  const data=saved[key]||{};
+  return {key,data:{...data,'CustomerId':customer.id}};
+}
+function openAsahiPoolQualification(customer){
+  const {key,data}=getAsahiPoolQualification(customer);
+  const content=$('drawer-content');
+  content.replaceChildren();
+  text(content,customer.name,'h2');
+  text(content,`${customer.city||'城市未提供'} · ${customer.type||'店型未填'} · 初篩 ${customer.tier}`,'p','subtext');
+  text(content,'啤酒與上架資格','h3');
+  text(content,'欄位選項與既有 118 家客戶相同；未查證的資訊請保留 Unknown。資料會存入此瀏覽器的既有 Qualification 儲存，不會寫回原始客戶總表。','p','subtext');
+  const form=document.createElement('div');
+  form.className='drawer-form';
+  const qualification=data;
+  [
+    {label:'目前酒類狀態',key:'目前酒類狀態',options:['已有販售酒類','已有販售啤酒','有啤酒但沒有 Asahi','已有 Asahi','完全沒有酒類']},
+    {label:'目前啤酒品牌',key:'目前啤酒品牌'},
+    {label:'Asahi Coverage',key:'Asahi是否覆蓋',options:['是','否']},
+    {label:'酒類販售資格',key:'酒類販售資格',options:['是','否']},
+    {label:'冷藏空間',key:'冷藏空間',options:['是','否']},
+    {label:'Decision Maker',key:'DecisionMaker',options:['已直接接觸老闆','已直接接觸採購','有窗口可以介紹','一般業務窗口','尚未建立關係']},
+    {label:'關係強度',key:'關係強度',options:['Strong','Medium','Weak','No Relationship','Unknown']},
+    {label:'Pilot 意願',key:'Pilot意願',options:['已確認願意 Pilot','有興趣','待洽談','暫無意願','拒絕']},
+    {label:'Qualification 備註',key:'備註'}
+  ].forEach(item=>field(form,item.label,item.key,qualification[item.key],item.options));
+  content.appendChild(form);
+  const save=document.createElement('button');
+  save.className='drawer-save';
+  save.textContent='儲存 Qualification';
+  save.addEventListener('click',()=>{
+    form.querySelectorAll('[data-key]').forEach(input=>{qualification[input.dataset.key]=input.value||'Unknown';});
+    qualification['CustomerId']=customer.id;
+    saveQual(key,qualification);
+    window.dispatchEvent(new CustomEvent('asahi-pool-qualification-updated',{detail:{customerId:customer.id}}));
+    showToast('已儲存客戶作戰資料');
+  });
+  content.appendChild(save);
+  $('detail-drawer').classList.add('open');
+  $('detail-drawer').setAttribute('aria-hidden','false');
+  $('drawer-backdrop').classList.add('open');
+}
+window.asahiPoolQualification={get:getAsahiPoolQualification,open:openAsahiPoolQualification};
 function openDrawer(r){
   currentRecord=r;
   const c=$('drawer-content');
@@ -579,6 +631,7 @@ function openDrawer(r){
     saveQual(r.name,r.qualificationData);
     calculate();
     render();
+    if(r.qualificationData['CustomerId'])window.dispatchEvent(new CustomEvent('asahi-pool-qualification-updated',{detail:{customerId:r.qualificationData['CustomerId']}}));
     openDrawer(r);
     showToast('已儲存客戶作戰資料');
   });

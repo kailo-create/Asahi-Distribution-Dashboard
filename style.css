@@ -1469,6 +1469,8 @@ body { background: var(--bg); color: var(--text); font-size: 14px; }
 .pool-tier-badge.tier-b { background: #fff2d3; color: #875a0a; }
 .pool-tier-badge.tier-c { background: #e8f0f7; color: #365f80; }
 .pool-next-step { color: #684600; }
+.pool-qualification-summary { display:block; max-width:300px; color:var(--muted); font-size:.75rem; line-height:1.45; overflow-wrap:anywhere; }
+.pool-qualification-edit { margin-top:5px; padding:0; font-size:.75rem; }
 .pool-table a { color: var(--primary); font-weight: 700; white-space: nowrap; }
 .pool-empty { padding: 24px; color: var(--muted); text-align: center; font-size: .82rem; }
 .pool-result-count { margin: 8px 2px 0; color: var(--muted); font-size: .7rem; }

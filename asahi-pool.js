@@ -551,6 +551,9 @@ function renderAsahiPool(){
   const resultCount=document.getElementById('asahi-pool-result-count');
   const sourceBase='https://docs.google.com/spreadsheets/d/1Ubzqq_EKfJ8TDvo7KEBRG4KV4anXROxScoZAhPfS2gA/edit?gid=808112332';
   const tierLabels={A:'A｜直接啤酒情境',B:'B｜餐飲搭餐優先',C:'C｜先確認場景'};
+  const qualificationFields=['目前酒類狀態','目前啤酒品牌','Asahi是否覆蓋','酒類販售資格','冷藏空間'];
+  const getQualification=row=>window.asahiPoolQualification?.get({id:row.id,name:row.name})?.data||{};
+  const known=value=>value!==undefined&&value!==null&&String(value).trim()!==''&&String(value).trim()!=='Unknown';
   const renderRows=()=>{
     const query=search.value.trim().toLowerCase();
     const visible=rows.filter(row=>(!tierFilter.value||row.tier===tierFilter.value)&&`${row.name} ${row.type} ${row.city}`.toLowerCase().includes(query));
@@ -565,9 +568,14 @@ function renderAsahiPool(){
       strong.textContent=row.name;id.textContent=`ID ${row.id}`;name.append(strong,id);
       const type=document.createElement('td');type.textContent=row.type||'店型未填（名稱線索分類，請複核）';
       const city=document.createElement('td');city.textContent=row.city||'未提供';
-      const next=document.createElement('td'),nextText=document.createElement('span');
-      nextText.className='pool-next-step';nextText.textContent='確認酒證、啤酒品牌、決策者與冷藏條件';
-      next.appendChild(nextText);
+      const next=document.createElement('td'),qualification=getQualification(row);
+      const status=document.createElement('span');
+      status.className='pool-qualification-summary';
+      status.textContent=`酒類：${known(qualification['目前酒類狀態'])?qualification['目前酒類狀態']:'Unknown'} · 啤酒：${known(qualification['目前啤酒品牌'])?qualification['目前啤酒品牌']:'Unknown'} · Asahi：${known(qualification['Asahi是否覆蓋'])?qualification['Asahi是否覆蓋']:'Unknown'}`;
+      const edit=document.createElement('button');
+      edit.type='button';edit.className='link-button pool-qualification-edit';edit.textContent='編輯 Qualification';
+      edit.addEventListener('click',()=>window.asahiPoolQualification?.open(row));
+      next.append(status,edit);
       const source=document.createElement('td'),link=document.createElement('a');
       link.href=`${sourceBase}&range=A${row.sourceRow}`;
       link.target='_blank';link.rel='noopener noreferrer';link.textContent=`第 ${row.sourceRow} 列`;
@@ -575,13 +583,18 @@ function renderAsahiPool(){
       tr.append(tier,name,type,city,next,source);body.appendChild(tr);
     });
     empty.hidden=visible.length>0;
-    resultCount.textContent=`顯示 ${visible.length} / ${rows.length} 家候選 · 快照 ${ASAHI_POOL_SNAPSHOT.capturedAt}`;
+    const qualified=rows.filter(row=>qualificationFields.every(key=>known(getQualification(row)[key]))).length;
+    resultCount.textContent=`顯示 ${visible.length} / ${rows.length} 家候選 · 已補齊酒類狀態 ${qualified} 家 · 快照 ${ASAHI_POOL_SNAPSHOT.capturedAt}`;
   };
   search.addEventListener('input',renderRows);
   tierFilter.addEventListener('change',renderRows);
+  window.addEventListener('asahi-pool-qualification-updated',renderRows);
   document.getElementById('export-asahi-pool').addEventListener('click',()=>{
-    const headers=['初篩類別','客戶名稱','來源店型','城市','來源店號','試算表列','下一步確認'];
-    const csvRows=rows.map(row=>[tierLabels[row.tier],row.name,row.type,row.city,row.id,row.sourceRow,'酒類資格、啤酒品牌、決策者、冷藏條件']);
+    const headers=['初篩類別','客戶名稱','來源店型','城市','來源店號','試算表列','目前酒類狀態','目前啤酒品牌','Asahi是否覆蓋','酒類販售資格','冷藏空間','DecisionMaker','關係強度','Pilot意願','Qualification備註','下一步確認'];
+    const csvRows=rows.map(row=>{
+      const qualification=getQualification(row);
+      return [tierLabels[row.tier],row.name,row.type,row.city,row.id,row.sourceRow,...qualificationFields.map(key=>qualification[key]||'Unknown'),qualification.DecisionMaker||'Unknown',qualification['關係強度']||'Unknown',qualification['Pilot意願']||'Unknown',qualification['備註']||'','酒類資格、啤酒品牌、決策者、冷藏條件'];
+    });
     const content=[headers,...csvRows].map(row=>row.map(value=>`"${String(value).replace(/"/g,'""')}"`).join(',')).join('\r\n');
     const blob=new Blob(['\uFEFF',content],{type:'text/csv;charset=utf-8'});
     const url=URL.createObjectURL(blob),anchor=document.createElement('a');

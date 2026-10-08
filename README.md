@@ -70,7 +70,13 @@ with blank store type for review. These are prospects to qualify, not confirmed
 beer opportunities. Other rows are held out, not presumed unfit. The dashboard
 is static and the private Connected Sheets source requires Google
 authentication, so the shortlist is not live-synced; source-row links and CSV
-export are provided for review.
+export are provided for review. Each candidate row can be edited with the same
+alcohol, current beer, Asahi coverage, sales qualification, cold-storage,
+decision-maker, relationship, and pilot-willingness fields used for existing
+customer qualification. These records use the same browser-local qualification
+store, keyed by CustomerId when available, and are included in the candidate
+CSV export; they do not sync across browsers or users and never change the raw
+customer data.
 
 The Flask channel form can request a Cuisine Type suggestion from OpenAI. Set
 `OPENAI_API_KEY` in the server environment (and optionally `OPENAI_MODEL`, which
