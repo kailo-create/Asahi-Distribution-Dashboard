@@ -1421,6 +1421,38 @@ body { background: var(--bg); color: var(--text); font-size: 14px; }
   line-height: 1.5;
 }
 .pool-snapshot-notice strong { color: #684600; }
+.pool-shared-sync {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(240px, 1.3fr) auto auto;
+  align-items: end;
+  gap: 8px;
+  margin: 0 0 14px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: #f8fbf9;
+}
+.pool-shared-sync-copy { display: grid; gap: 4px; min-width: 0; }
+.pool-shared-sync-copy strong { color: var(--primary); font-size: .85rem; }
+.pool-shared-sync-copy span { color: var(--muted); font-size: .74rem; overflow-wrap: anywhere; }
+.pool-shared-sync-help { grid-column: 1 / -1; color: var(--muted); font-size: .68rem; line-height: 1.45; }
+#pool-shared-sync-status[data-state="error"] { color: #a12e2e; }
+#pool-shared-sync-status[data-state="success"] { color: var(--primary); }
+#pool-shared-sync-status[data-state="busy"] { color: #875a0a; }
+.pool-shared-sync label { display: grid; gap: 4px; color: var(--muted); font-size: .7rem; }
+.pool-shared-sync input {
+  min-width: 0;
+  min-height: 38px;
+  padding: 7px 9px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: #fff;
+  color: var(--text);
+  font: inherit;
+  font-size: .75rem;
+}
+.pool-shared-sync button { min-height: 38px; white-space: nowrap; }
+.pool-shared-sync button:disabled { cursor: not-allowed; opacity: .55; }
 .pool-summary-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
 .pool-summary-grid article {
   display: grid;
@@ -1510,6 +1542,9 @@ body { background: var(--bg); color: var(--text); font-size: 14px; }
   .revenue-summary-grid { grid-template-columns: 1fr; }
   .executive-readiness-grid { grid-template-columns: 1fr; }
   .pool-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pool-shared-sync { grid-template-columns: 1fr; }
+  .pool-shared-sync-help { grid-column: auto; }
+  .pool-shared-sync button { width: 100%; }
   .asahi-pool-heading { display: block; }
   .asahi-pool-actions { margin-top: 10px; }
 }

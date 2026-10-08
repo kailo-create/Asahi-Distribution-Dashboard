@@ -75,8 +75,25 @@ alcohol, current beer, Asahi coverage, sales qualification, cold-storage,
 decision-maker, relationship, and pilot-willingness fields used for existing
 customer qualification. These records use the same browser-local qualification
 store, keyed by CustomerId when available, and are included in the candidate
-CSV export; they do not sync across browsers or users and never change the raw
-customer data.
+CSV export. They never change the raw customer data. The pool page can sync
+these qualification fields to the separate shared spreadsheet after each user
+connects with Google OAuth; without that connection, edits remain local to the
+browser.
+
+To enable shared qualification sync, create an **Internal** Google OAuth 2.0
+Web application client for the Workspace organization, add the deployed
+dashboard origin (for example `https://kailo-create.github.io`) to Authorized
+JavaScript origins, and enable the Google Sheets API in the same Cloud project.
+Configure the OAuth client ID in the pool page's public client configuration
+and connect using an account that has Editor access to the shared qualification
+spreadsheet. The client ID is public configuration, not a secret. The dashboard requests spreadsheet edit and
+account-email scopes; OAuth tokens are held only in page memory and are not
+stored. The spreadsheet remains restricted to the Workspace domain.
+
+Sync validates the spreadsheet header row and unique CustomerIds before
+loading. Saving a pool Qualification updates only that customer's qualification
+cells and update metadata; source customer rows are not modified. Errors leave
+the browser-local copy in place and are shown in the sync status.
 
 The Flask channel form can request a Cuisine Type suggestion from OpenAI. Set
 `OPENAI_API_KEY` in the server environment (and optionally `OPENAI_MODEL`, which

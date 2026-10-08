@@ -24,6 +24,25 @@ const cuisineRules = [
 ];
 const SOURCE_URL = 'https://docs.google.com/spreadsheets/d/1csq9-Q31rc0YI2BCO4TXZuJg-mkJrd9kr3t2DXmxP70/export?format=csv&gid=0';
 const STORAGE_KEY = 'asahi-zero-sugar-qualification-v1';
+const POOL_SHEET_ID = '1jtbGQR3iyzsR0dppyLKZIzFSatIlTpMifMcF4iiJz-U';
+const POOL_SHEET_NAME = '工作表1';
+const POOL_OAUTH_CLIENT_ID = '941169411685-m37pic4stda7dlv88ed1m41bdqfad8kt.apps.googleusercontent.com';
+const POOL_OAUTH_CLIENT_ID_KEY = 'asahi-pool-google-oauth-client-id';
+const POOL_HEADERS = ['CustomerId / 店號','客戶名稱','來源店型','城市','A/B/C 初篩','目前酒類狀態','目前啤酒品牌','Asahi是否覆蓋','酒類販售資格','冷藏空間','DecisionMaker','關係強度','Pilot意願','Qualification 備註','最後更新時間','更新者'];
+const POOL_QUAL_FIELDS = [
+  { column: 'F', key: '目前酒類狀態' },
+  { column: 'G', key: '目前啤酒品牌' },
+  { column: 'H', key: 'Asahi是否覆蓋' },
+  { column: 'I', key: '酒類販售資格' },
+  { column: 'J', key: '冷藏空間' },
+  { column: 'K', key: 'DecisionMaker' },
+  { column: 'L', key: '關係強度' },
+  { column: 'M', key: 'Pilot意願' },
+  { column: 'N', key: '備註' }
+];
+let poolGoogleAccessToken = null;
+let poolGoogleEmail = '';
+let poolSheetRowsById = new Map();
 const SOURCE_CONFIG = {
   sourceName: '每日 Apps Script 資料源',
   sourceType: 'csv',
@@ -210,6 +229,138 @@ const escapeCsv = value => { const s=String(value ?? ''); return /[",\r\n]/.test
 function parseCSV(input) { const rows=[]; let row=[], cell='', quoted=false; for(let i=0;i<input.length;i++){const ch=input[i],next=input[i+1]; if(ch==='"'&&quoted&&next==='"'){cell+='"';i++;} else if(ch==='"') quoted=!quoted; else if(ch===','&&!quoted){row.push(cell);cell='';} else if((ch==='\n'||ch==='\r')&&!quoted){if(ch==='\r'&&next==='\n')i++;row.push(cell);if(row.some(v=>v.trim()))rows.push(row);row=[];cell='';} else cell+=ch;} if(cell||row.length){row.push(cell);rows.push(row);} return rows; }
 function loadQual() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}'); } catch(e) { return {}; } }
 function saveQual(name, data) { const all=loadQual(); all[name]=data; localStorage.setItem(STORAGE_KEY,JSON.stringify(all)); }
+function setPoolSyncStatus(message, state=''){
+  const status=$('pool-shared-sync-status');
+  if(status){status.textContent=message;status.dataset.state=state;}
+}
+function poolApiError(payload,status){
+  return payload?.error?.message||payload?.error_description||`Google API HTTP ${status}`;
+}
+async function poolApiRequest(url,options={}){
+  if(!poolGoogleAccessToken)throw new Error('請先連接共用表。');
+  const response=await fetch(url,{...options,headers:{Authorization:`Bearer ${poolGoogleAccessToken}`,...(options.headers||{})}});
+  const text=await response.text();
+  let payload={};
+  try{payload=text?JSON.parse(text):{};}catch{throw new Error(`Google API 回傳非預期格式（HTTP ${response.status}）。`);}
+  if(!response.ok)throw new Error(poolApiError(payload,response.status));
+  return payload;
+}
+function requestPoolGoogleToken(){
+  const clientId=$('pool-google-client-id')?.value.trim()||localStorage.getItem(POOL_OAUTH_CLIENT_ID_KEY)||POOL_OAUTH_CLIENT_ID;
+  if(!clientId)throw new Error('請先填入 Google OAuth 用戶端 ID。');
+  if(!clientId.endsWith('.apps.googleusercontent.com'))throw new Error('OAuth 用戶端 ID 格式不正確。');
+  if(!window.google?.accounts?.oauth2)throw new Error('Google 登入元件尚未載入，請重新整理頁面後再試。');
+  localStorage.setItem(POOL_OAUTH_CLIENT_ID_KEY,clientId);
+  return new Promise((resolve,reject)=>{
+    const tokenClient=google.accounts.oauth2.initTokenClient({
+      client_id:clientId,
+      scope:'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/userinfo.email',
+      callback:response=>{
+        if(response.error){reject(new Error(response.error_description||response.error));return;}
+        if(!response.access_token){reject(new Error('Google 未回傳授權憑證。'));return;}
+        poolGoogleAccessToken=response.access_token;
+        resolve(response.access_token);
+      },
+      error_callback:error=>reject(new Error(error.message||'Google 登入視窗未能開啟。'))
+    });
+    tokenClient.requestAccessToken();
+  });
+}
+async function getPoolGoogleEmail(){
+  const response=await poolApiRequest('https://www.googleapis.com/oauth2/v3/userinfo');
+  if(!response.email)throw new Error('無法讀取 Google 帳號 email；請確認 OAuth 已包含 email 權限。');
+  return response.email;
+}
+function expectedPoolHeadersMatch(headers){
+  return POOL_HEADERS.every((header,index)=>headers[index]===header);
+}
+async function refreshPoolSharedQualification(){
+  setPoolSyncStatus('正在從共用表載入 Qualification…','busy');
+  const range=encodeURIComponent(`'${POOL_SHEET_NAME}'!A1:P`);
+  const result=await poolApiRequest(`https://sheets.googleapis.com/v4/spreadsheets/${POOL_SHEET_ID}/values/${range}`);
+  const values=result.values||[];
+  if(!expectedPoolHeadersMatch(values[0]||[]))throw new Error('共用表欄位標題不符合預期；為避免錯寫資料，已停止同步。');
+  const rowsById=new Map();
+  const sheetRecords=[];
+  values.slice(1).forEach((row,index)=>{
+    const id=String(row[0]||'').trim();
+    if(!id){
+      if(row.some(value=>String(value||'').trim()))throw new Error(`共用表第 ${index+2} 列缺少店號；為避免錯配，已停止同步。`);
+      return;
+    }
+    if(rowsById.has(id))throw new Error(`共用表有重複店號 ${id}；為避免更新錯列，已停止同步。`);
+    rowsById.set(id,index+2);
+    const customerName=String(row[1]||'').trim();
+    if(!customerName)throw new Error(`共用表第 ${index+2} 列缺少客戶名稱；為避免錯配，已停止同步。`);
+    const key=asahiPoolQualificationKey(id,customerName);
+    sheetRecords.push({row,key,id});
+  });
+  if(!rowsById.size)throw new Error('共用表沒有任何客戶資料列。');
+  const localQualifications=loadQual();
+  sheetRecords.forEach(({row,key,id})=>{
+    const existing=localQualifications[key]||{};
+    const merged={...existing,CustomerId:id};
+    POOL_QUAL_FIELDS.forEach((field,fieldIndex)=>{
+      const sharedValue=String(row[fieldIndex+5]||'').trim();
+      if(sharedValue)merged[field.key]=sharedValue;
+    });
+    localQualifications[key]=merged;
+  });
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(localQualifications));
+  poolSheetRowsById=rowsById;
+  window.dispatchEvent(new CustomEvent('asahi-pool-qualification-updated'));
+  setPoolSyncStatus(`已連線 ${poolGoogleEmail} · 載入 ${rowsById.size} 家 · ${new Date().toLocaleTimeString('zh-TW')}`,'success');
+}
+async function savePoolSharedQualification(customerId,qualification){
+  const row=poolSheetRowsById.get(customerId);
+  if(!row)throw new Error('共用表中找不到此店號；請先重新載入共用資料。');
+  const values=[
+    ...POOL_QUAL_FIELDS.map(field=>qualification[field.key]||''),
+    new Date().toISOString(),
+    poolGoogleEmail
+  ];
+  const range=encodeURIComponent(`'${POOL_SHEET_NAME}'!F${row}:P${row}`);
+  await poolApiRequest(`https://sheets.googleapis.com/v4/spreadsheets/${POOL_SHEET_ID}/values/${range}?valueInputOption=RAW`,{
+    method:'PUT',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({majorDimension:'ROWS',values:[values]})
+  });
+}
+async function connectPoolSharedSheet(){
+  const connect=$('pool-shared-connect'),refresh=$('pool-shared-refresh');
+  connect.disabled=true;
+  try{
+    await requestPoolGoogleToken();
+    poolGoogleEmail=await getPoolGoogleEmail();
+    await refreshPoolSharedQualification();
+    refresh.disabled=false;
+    connect.textContent='重新連接';
+  }catch(error){
+    poolGoogleAccessToken=null;
+    poolGoogleEmail='';
+    setPoolSyncStatus(`連線失敗：${error.message}`,'error');
+  }finally{
+    connect.disabled=false;
+  }
+}
+function setupPoolSharedQualification(){
+  const clientIdInput=$('pool-google-client-id');
+  const connect=$('pool-shared-connect');
+  const refresh=$('pool-shared-refresh');
+  if(!clientIdInput||!connect||!refresh)return;
+  clientIdInput.value=localStorage.getItem(POOL_OAUTH_CLIENT_ID_KEY)||POOL_OAUTH_CLIENT_ID;
+  connect.addEventListener('click',connectPoolSharedSheet);
+  refresh.addEventListener('click',async()=>{
+    refresh.disabled=true;
+    try{
+      await refreshPoolSharedQualification();
+    }catch(error){
+      setPoolSyncStatus(`載入失敗：${error.message}`,'error');
+    }finally{
+      refresh.disabled=!poolGoogleAccessToken;
+    }
+  });
+}
 function model(raw, qual={}) {
   const r={rawData:{},qualificationData:{...qual},calculatedMetrics:{}};
   RAW_HEADERS.forEach((h,i)=>{r.rawData[h]=String(raw[i]??'').trim();});
@@ -471,7 +622,7 @@ function openAsahiPoolQualification(customer){
   text(content,customer.name,'h2');
   text(content,`${customer.city||'城市未提供'} · ${customer.type||'店型未填'} · 初篩 ${customer.tier}`,'p','subtext');
   text(content,'啤酒與上架資格','h3');
-  text(content,'欄位選項與既有 118 家客戶相同；未查證的資訊請保留 Unknown。資料會存入此瀏覽器的既有 Qualification 儲存，不會寫回原始客戶總表。','p','subtext');
+  text(content,'欄位選項與既有 118 家客戶相同；未查證的資訊請保留 Unknown。連接共用表後會同步團隊 Qualification；原始客戶總表不會被修改。','p','subtext');
   const form=document.createElement('div');
   form.className='drawer-form';
   const qualification=data;
@@ -490,12 +641,28 @@ function openAsahiPoolQualification(customer){
   const save=document.createElement('button');
   save.className='drawer-save';
   save.textContent='儲存 Qualification';
-  save.addEventListener('click',()=>{
+  save.addEventListener('click',async()=>{
     form.querySelectorAll('[data-key]').forEach(input=>{qualification[input.dataset.key]=input.value||'Unknown';});
     qualification['CustomerId']=customer.id;
     saveQual(key,qualification);
     window.dispatchEvent(new CustomEvent('asahi-pool-qualification-updated',{detail:{customerId:customer.id}}));
-    showToast('已儲存客戶作戰資料');
+    if(!poolGoogleAccessToken){
+      showToast('已儲存在此瀏覽器；連接共用表後才能分享給同事。');
+      return;
+    }
+    save.disabled=true;
+    save.textContent='同步至共用表…';
+    try{
+      await savePoolSharedQualification(customer.id,qualification);
+      showToast('Qualification 已同步至團隊共用表。');
+      setPoolSyncStatus(`已連線 ${poolGoogleEmail} · 剛剛同步`,'success');
+    }catch(error){
+      showToast(`本機已保存，但共用表同步失敗：${error.message}`);
+      setPoolSyncStatus(`同步失敗：${error.message}`,'error');
+    }finally{
+      save.disabled=false;
+      save.textContent='儲存 Qualification';
+    }
   });
   content.appendChild(save);
   $('detail-drawer').classList.add('open');
@@ -814,6 +981,7 @@ function renderTable(){
 }
 function exportCSV(){const calculatedHeaders=['InAttackList','RawRegion','ManualRegion','RegionDisplay','StrategicPotential','ExecutionReadiness','OpportunityType','Quadrant','DataConfidence','AutoHealthSegment','ManualHealthSegment','FinalHealthSegment','HealthChannelFit','HealthAttackPriority','HealthFitReason','AutoCuisineType','ManualCuisineType','CuisineType','CuisineSource','CuisineConfidence','CuisineSignals','ExecutionDecision','ExecutionDecisionReason','PipelineCandidate','PipelineTargetStores','ExpectedMonthlySalesNTD'];const headers=[...RAW_HEADERS,...QUAL_HEADERS,...calculatedHeaders];const lines=[headers.map(escapeCsv).join(',')];records.forEach(r=>{const m=metric(r);const values={InAttackList:m.inAttackList?'Yes':'No',RawRegion:r.region,ManualRegion:m.manualRegion||'',RegionDisplay:m.regionDisplay,StrategicPotential:m.strategicPotential,ExecutionReadiness:m.executionReadiness,OpportunityType:m.opportunityType,Quadrant:m.quadrant,DataConfidence:`${m.confidence}%`,AutoHealthSegment:m.autoHealthSegment,ManualHealthSegment:m.manualHealthSegment||'',FinalHealthSegment:m.healthSegment,HealthChannelFit:m.healthChannelFit,HealthAttackPriority:m.healthAttackPriority,HealthFitReason:m.healthFitReason,AutoCuisineType:m.autoCuisineType,ManualCuisineType:m.manualCuisineType||'',CuisineType:m.cuisineTypeDisplay,CuisineSource:m.cuisineSource,CuisineConfidence:m.cuisineConfidence,CuisineSignals:m.cuisineSignals.join(' | '),ExecutionDecision:m.executionDecision,ExecutionDecisionReason:m.executionReason,PipelineCandidate:m.pipelineCandidate?'Yes':'No',PipelineTargetStores:m.pipelineTargetStores??'',ExpectedMonthlySalesNTD:m.expectedMonthlySales??''};lines.push(headers.map(h=>escapeCsv(RAW_HEADERS.includes(h)?r.rawData[h]:QUAL_HEADERS.includes(h)?r.qualificationData[h]||'Unknown':values[h]??'')).join(','));});const blob=new Blob(['\uFEFF'+lines.join('\r\n')],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='asahi-zero-sugar-opportunity.csv';a.click();URL.revokeObjectURL(url);}
 document.addEventListener('DOMContentLoaded',()=>{['channel-search','quick-filter','region-filter','priority-filter','health-segment-filter','health-priority-filter','owner-filter','attack-status-filter','opportunity-filter','cuisine-filter','quadrant-filter','alcohol-filter','stage-filter','confidence-filter','sort-select'].forEach(id=>$(id)?.addEventListener('input',renderTable));$('csv-file')?.addEventListener('change',e=>e.target.files[0]&&importCSV(e.target.files[0]));$('export-csv')?.addEventListener('click',exportCSV);$('reset-data')?.addEventListener('click',loadSource);$('empty-reload')?.addEventListener('click',loadSource);$('print-button')?.addEventListener('click',()=>window.print());$('drawer-close')?.addEventListener('click',closeDrawer);$('drawer-backdrop')?.addEventListener('click',closeDrawer);
+  setupPoolSharedQualification();
   $('sync-daily')?.addEventListener('click',syncDailyData);
   $('empty-sync')?.addEventListener('click',syncDailyData);
   $('analytics-empty-sync')?.addEventListener('click',syncDailyData);
