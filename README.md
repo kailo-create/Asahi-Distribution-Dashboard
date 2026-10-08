@@ -47,6 +47,11 @@ unweighted monthly estimates by stage. The static dashboard does not retain
 weekly Pipeline snapshots, so it cannot report stage movement, newly added
 leads, or week-over-week changes; those trends require a persisted history.
 
+The next-actions page has a separate strategy addendum for the proposed
+12-independent-procurement-unit interview, up-to-6 paid-pilot, and decision-gate
+workflow. It is advisory only: it does not change qualification fields, scores,
+filters, or the Attack List. Unknown qualification evidence remains unknown.
+
 The `Asahi 客戶池初篩` section contains a dated first-pass snapshot of 526
 outlets from the full 4,914-row BigQuery Connected Sheets export, merged with
 the existing shortlist by `store_id` so existing entries are retained without
