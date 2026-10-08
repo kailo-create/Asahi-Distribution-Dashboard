@@ -59,16 +59,19 @@
   function applyTextNode(node) {
     const source = originalText.has(node) ? originalText.get(node) : node.nodeValue;
     if (!originalText.has(node)) originalText.set(node, source);
-    node.nodeValue = language === 'en' ? translate(source) : source;
+    const next = language === 'en' ? translate(source) : source;
+    if (node.nodeValue !== next) node.nodeValue = next;
   }
   function applyElement(el) {
+    if (el.tagName === 'SCRIPT' || el.tagName === 'STYLE') return;
     [...el.childNodes].forEach(node => { if (node.nodeType === Node.TEXT_NODE) applyTextNode(node); else if (node.nodeType === Node.ELEMENT_NODE) applyElement(node); });
     attributeNames.forEach(name => {
       if (!el.hasAttribute(name)) return;
       let attrs = originalAttrs.get(el);
       if (!attrs) { attrs = {}; originalAttrs.set(el, attrs); }
       if (!(name in attrs)) attrs[name] = el.getAttribute(name);
-      el.setAttribute(name, language === 'en' ? translate(attrs[name]) : attrs[name]);
+      const next = language === 'en' ? translate(attrs[name]) : attrs[name];
+      if (el.getAttribute(name) !== next) el.setAttribute(name, next);
     });
   }
   function setLanguage(next) {
@@ -93,6 +96,6 @@
       if (mutation.type === 'characterData') applyTextNode(mutation.target);
       mutation.addedNodes.forEach(node => { if (node.nodeType === Node.TEXT_NODE) applyTextNode(node); else if (node.nodeType === Node.ELEMENT_NODE) applyElement(node); });
     });
-  }).observe(document.body, { childList: true, subtree: true, characterData: true });
+  }).observe(document.body, { childList: true, subtree: true });
   setLanguage(language);
 })();
