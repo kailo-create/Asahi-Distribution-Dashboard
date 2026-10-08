@@ -254,7 +254,7 @@ function requestPoolGoogleToken(){
   return new Promise((resolve,reject)=>{
     const tokenClient=google.accounts.oauth2.initTokenClient({
       client_id:clientId,
-      scope:'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/userinfo.email',
+      scope:'openid email https://www.googleapis.com/auth/spreadsheets',
       callback:response=>{
         if(response.error){reject(new Error(response.error_description||response.error));return;}
         if(!response.access_token){reject(new Error('Google 未回傳授權憑證。'));return;}
