@@ -1618,3 +1618,6 @@ body { background: var(--bg); color: var(--text); font-size: 14px; }
 .pipe-list-tools{display:flex;gap:16px;align-items:center;margin-bottom:8px}
 .pipe-table select{font:inherit;max-width:9rem}
 .pipe-pot{font-weight:700}.pipe-pot.hi{color:#067647}.pipe-pot.mid{color:#b54708}.pipe-pot.lo{color:#667085}
+
+.pipe-names{max-width:32rem;line-height:1.6;font-size:.85rem;color:#344054;margin-top:4px}
+.pipe-table summary{cursor:pointer;font-weight:600}

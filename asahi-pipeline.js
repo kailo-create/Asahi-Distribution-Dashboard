@@ -28,6 +28,13 @@ function renderAsahiPipeline(){
     const miss=checks.find(([key])=>!known(r.data[key]));
     return miss?m[miss[0]]:'詢問 Pilot 意願';
   };
+  const namesCell=(tr,list)=>{
+    const td=document.createElement('td');
+    if(!list.length){td.textContent='—';tr.appendChild(td);return;}
+    const d=document.createElement('details'),sm=document.createElement('summary'),body=document.createElement('div');
+    sm.textContent=`${list.length} 家`;body.className='pipe-names';body.textContent=list.map(r=>r.name).join('、');
+    d.append(sm,body);if(list.length<=6)d.open=true;td.appendChild(d);tr.appendChild(td);
+  };
   const noteSync=text=>{el('pipe-sync-note').textContent=text;};
   const render=()=>{
     const scopeTier=el('pipe-scope').value;
@@ -44,11 +51,11 @@ function renderAsahiPipeline(){
     const tierCount=t=>all.filter(r=>r.tier===t).length;
     el('pipe-potential-kpis').replaceChildren(...[['高潛力｜A 直接啤酒情境（店）',tierCount('A')],['中潛力｜B 搭餐優先（店）',tierCount('B')],['待確認｜C 先確認場景（店）',tierCount('C')]].map(kpi));
     const types=new Map();
-    all.forEach(r=>{const k=`${r.tier}|${r.type||'店型未填'}`;const o=types.get(k)||{tier:r.tier,type:r.type||'店型未填（請複核）',n:0,adv:0};o.n+=1;if(['通過','試點候選'].includes(r.stage))o.adv+=1;types.set(k,o);});
+    all.forEach(r=>{const k=`${r.tier}|${r.type||'店型未填'}`;const o=types.get(k)||{tier:r.tier,type:r.type||'店型未填（請複核）',n:0,adv:0,list:[]};o.n+=1;o.list.push(r);if(['通過','試點候選'].includes(r.stage))o.adv+=1;types.set(k,o);});
     const pot=el('pipe-potential');pot.replaceChildren();
     [...types.values()].sort((a,b)=>'ABC'.indexOf(a.tier)-'ABC'.indexOf(b.tier)||b.n-a.n).forEach(o=>{
       const tr=document.createElement('tr');cell(tr,o.type);cell(tr,`${potential[o.tier][0]}（${o.tier}）`,`pipe-pot ${potential[o.tier][1]}`);
-      cell(tr,String(o.n),'num');cell(tr,`${(o.n/all.length*100).toFixed(1)}%`);cell(tr,String(o.adv),'num');pot.appendChild(tr);
+      cell(tr,String(o.n),'num');cell(tr,`${(o.n/all.length*100).toFixed(1)}%`);cell(tr,String(o.adv),'num');namesCell(tr,o.list);pot.appendChild(tr);
     });
 
     el('pipe-kpis').replaceChildren(...[['範圍店數',total],['已開始查證',total-count('待查證')],['通過',count('通過')],['試點候選',count('試點候選')],['淘汰',count('淘汰')]].map(kpi));
@@ -58,7 +65,7 @@ function renderAsahiPipeline(){
       const s=document.createElement('td'),badge=document.createElement('span');badge.className=`pool-stage-badge stage-${i}`;badge.textContent=name;s.appendChild(badge);tr.appendChild(s);
       cell(tr,defs[name]);cell(tr,String(n),'num');
       const share=document.createElement('td'),bar=document.createElement('div'),fill=document.createElement('i'),label=document.createElement('small');
-      bar.className='pipe-bar';fill.style.width=`${pct}%`;label.textContent=`${pct.toFixed(1)}%`;bar.appendChild(fill);share.append(bar,label);tr.appendChild(share);funnel.appendChild(tr);
+      bar.className='pipe-bar';fill.style.width=`${pct}%`;label.textContent=`${pct.toFixed(1)}%`;bar.appendChild(fill);share.append(bar,label);tr.appendChild(share);namesCell(tr,rows.filter(r=>r.stage===name));funnel.appendChild(tr);
     });
     const gaps=el('pipe-gaps');gaps.replaceChildren();
     const live=rows.filter(r=>r.stage!=='淘汰');
