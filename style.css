@@ -1640,3 +1640,9 @@ body { background: var(--bg); color: var(--text); font-size: 14px; }
 .pipe-gap-table{max-width:36rem}
 @media(max-width:900px){.pipe-board{grid-template-columns:1fr}.pipe-funnel-row{grid-template-columns:6rem 1fr 4rem}.pipe-funnel-row small{grid-column:1/-1}}
 .pipe-chip{color:#101828;flex:0 0 auto;line-height:1.4}
+
+.pipe-sub{color:#667085;font-size:.78rem}
+.pipe-quals{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:2px}
+.pipe-q{padding:1px 7px;border-radius:999px;font-size:.75rem;border:1px solid transparent}
+.pipe-q.ok{background:#d1fadf;color:#05603a}.pipe-q.no{background:#fee4e2;color:#b42318}.pipe-q.na{background:#fff;color:#98a2b3;border-color:#e4e7ec}
+.pipe-list-table td{vertical-align:middle}

@@ -102,9 +102,15 @@ function renderAsahiPipeline(){
     };
     list.slice(0,60).forEach(r=>{
       const tr=document.createElement('tr');
+      const nameTd=document.createElement('td'),strong=document.createElement('strong'),sub=document.createElement('small');
+      strong.textContent=r.name;sub.textContent=[r.type||'店型未填',r.city].filter(Boolean).join('｜');sub.className='pipe-sub';nameTd.append(strong,document.createElement('br'),sub);tr.appendChild(nameTd);
       const s=document.createElement('td'),badge=document.createElement('span');badge.className=`pool-stage-badge stage-${STAGES.indexOf(r.stage)}`;badge.textContent=r.stage;s.appendChild(badge);tr.appendChild(s);
-      cell(tr,r.name);cell(tr,r.type||'店型未填');
-      checks.forEach(([key])=>{const [icon,text]=mark(key,r.data);cell(tr,`${icon} ${text}`);});
+      const qTd=document.createElement('td'),qs=document.createElement('div');qs.className='pipe-quals';
+      const short={酒類販售資格:'酒類',冷藏空間:'冷藏',Asahi是否覆蓋:'Asahi',DecisionMaker:'決策者',Pilot意願:'意願'};
+      let okN=0;
+      checks.forEach(([key])=>{const [icon,text]=mark(key,r.data);const pill=document.createElement('span');
+        pill.className=`pipe-q ${icon==='✅'?'ok':icon==='❌'?'no':'na'}`;pill.title=`${short[key]}：${text}`;pill.textContent=short[key];if(icon==='✅')okN+=1;qs.appendChild(pill);});
+      const frac=document.createElement('small');frac.className='pipe-sub';frac.textContent=`已確認 ${okN}/5`;qTd.append(qs,frac);tr.appendChild(qTd);
       cell(tr,nextOf(r));
       const wkTd=document.createElement('td'),wsel=document.createElement('select');
       [['','未排定'],[thisWeek,'本週'],[nextWeek,'下週']].forEach(([v,t])=>{const o=document.createElement('option');o.value=v;o.textContent=t;wsel.appendChild(o);});
