@@ -1,16 +1,15 @@
 <!doctype html>
-<html lang="zh-Hant" translate="no" class="notranslate">
+<html lang="zh-Hant">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="google" content="notranslate">
   <meta name="description" content="菜蟲農食 × Asahi Zero-Sugar Health Channel Opportunity Engine">
   <title>Asahi Zero-Sugar Channel Command Center</title>
-  <link rel="stylesheet" href="style.css?v=team-shared-sheet-oauth-v1">
+  <link rel="stylesheet" href="style.css?v=pipeline-stage-v1">
 </head>
 <body>
 <header class="topbar">
   <div><p class="eyebrow">Zero-Sugar Health Channel · Decision Center</p><h1>Asahi 客戶機會指揮中心</h1></div>
-  <div class="header-actions"><span class="status-pill">● V1 decision model</span><button class="outline-button" id="print-button">列印簡報</button></div>
+  <div class="header-actions"><span class="status-pill">● V1 decision model</span><button class="outline-button" id="language-toggle">EN</button><button class="outline-button" id="print-button">列印簡報</button></div>
 </header>
 <nav class="pill-tabs" aria-label="主要導覽">
   <a class="active" href="#summary" aria-current="page">決策摘要</a>
@@ -109,6 +108,11 @@
       <strong>篩選邏輯</strong>
       <span>A/B/C 依店型與明確店名線索初分；候選須同時符合 `storeOperation=active`、`supplying=True`、`activeState≠dropped`，並排除員工餐、吧檯、活動／送樣、中央廚房等內部用途。</span>
     </div>
+    <div class="pool-pipeline">
+      <div class="pool-pipeline-head"><strong>A 級推進 Pipeline</strong><span id="pool-pipeline-total"></span></div>
+      <div id="pool-pipeline-board" class="pool-pipeline-board"></div>
+      <small>階段依 Qualification 自動判定：淘汰＝酒類資格或冷藏為「否」、Asahi 已覆蓋、或無意願；通過＝酒類資格、冷藏、決策者皆確認且 Asahi 未覆蓋；試點候選＝通過且有 Pilot 意願。付費試點需核准，不自動判定。點階段可篩選。</small>
+    </div>
     <div class="pool-table-tools">
       <input id="asahi-pool-search" type="search" placeholder="搜尋店名、店型或城市" aria-label="搜尋 Asahi 客戶池">
       <select id="asahi-pool-tier" aria-label="依初篩類別篩選">
@@ -117,10 +121,14 @@
         <option value="B">B｜餐飲搭餐優先</option>
         <option value="C">C｜先確認場景</option>
       </select>
+      <select id="asahi-pool-stage" aria-label="依推進階段篩選">
+        <option value="">所有階段</option>
+        <option>待查證</option><option>查證中</option><option>通過</option><option>試點候選</option><option>淘汰</option>
+      </select>
     </div>
     <div class="pool-table-wrap">
       <table class="pool-table">
-        <thead><tr><th>初篩</th><th>店家</th><th>來源店型</th><th>城市</th><th>啤酒 Qualification</th><th>來源列</th></tr></thead>
+        <thead><tr><th>階段</th><th>初篩</th><th>店家</th><th>來源店型</th><th>城市</th><th>啤酒 Qualification</th><th>來源列</th></tr></thead>
         <tbody id="asahi-pool-table"></tbody>
       </table>
       <div id="asahi-pool-empty" class="pool-empty" hidden>沒有符合篩選條件的候選店家。</div>
@@ -225,7 +233,7 @@
 </main>
 <aside id="detail-drawer" class="drawer" aria-hidden="true"><button id="drawer-close" class="drawer-close" aria-label="Close">×</button><div id="drawer-content"></div></aside><div id="drawer-backdrop" class="drawer-backdrop"></div>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="dashboard.js?v=team-shared-sheet-oauth-v1"></script>
-<script src="asahi-pool.js?v=team-shared-sheet-oauth-v1"></script>
+<script src="dashboard.js?v=pipeline-stage-v1"></script>
+<script src="asahi-pool.js?v=pipeline-stage-v1"></script>
 <script src="dashboard-tabs.js?v=run-ready-v14-five-pages"></script>
 </body></html>

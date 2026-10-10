@@ -1591,3 +1591,14 @@ body { background: var(--bg); color: var(--text); font-size: 14px; }
   .queue-item.queue-row { grid-template-columns: 1fr; }
   .queue-item.queue-row .queue-actions { justify-content: flex-start; }
 }
+
+.pool-pipeline{margin:16px 0;padding:14px;border:1px solid var(--line,#ddd);border-radius:10px}
+.pool-pipeline-head{display:flex;justify-content:space-between;gap:8px;margin-bottom:10px}
+.pool-pipeline-board{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:8px}
+.pool-pipeline-stage{display:flex;flex-direction:column;gap:4px;padding:10px;border:1px solid #d0d5dd;border-radius:8px;background:#fff;cursor:pointer;text-align:left;font:inherit}
+.pool-pipeline-stage strong{font-size:1.6rem}
+.pool-pipeline-stage.active{outline:2px solid #1d4ed8}
+.pool-pipeline-stage.stage-3{background:#ecfdf3}.pool-pipeline-stage.stage-4{background:#f2f4f7;color:#667085}
+.pool-stage-badge{display:inline-block;padding:2px 8px;border-radius:999px;background:#eef2f6;font-size:.8rem;white-space:nowrap}
+.pool-stage-badge.stage-2,.pool-stage-badge.stage-3{background:#d1fadf}.pool-stage-badge.stage-4{background:#e4e7ec;color:#667085}
+@media(max-width:700px){.pool-pipeline-board{grid-template-columns:repeat(2,1fr)}}

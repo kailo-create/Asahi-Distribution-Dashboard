@@ -547,19 +547,31 @@ function renderAsahiPool(){
 
   const search=document.getElementById('asahi-pool-search');
   const tierFilter=document.getElementById('asahi-pool-tier');
+  const stageFilter=document.getElementById('asahi-pool-stage');
   const empty=document.getElementById('asahi-pool-empty');
   const resultCount=document.getElementById('asahi-pool-result-count');
   const sourceBase='https://docs.google.com/spreadsheets/d/1Ubzqq_EKfJ8TDvo7KEBRG4KV4anXROxScoZAhPfS2gA/edit?gid=808112332';
   const tierLabels={A:'A｜直接啤酒情境',B:'B｜餐飲搭餐優先',C:'C｜先確認場景'};
   const qualificationFields=['目前酒類狀態','目前啤酒品牌','Asahi是否覆蓋','酒類販售資格','冷藏空間'];
+  const STAGES=['待查證','查證中','通過','試點候選','淘汰'];
+  const stageOf=q=>{
+    const k=key=>known(q[key])?String(q[key]).trim():'';
+    const pilot=k('Pilot意願');
+    if(k('酒類販售資格')==='否'||k('冷藏空間')==='否'||k('Asahi是否覆蓋')==='是'||k('目前酒類狀態')==='已有 Asahi'||['暫無意願','拒絕'].includes(pilot))return '淘汰';
+    const pass=k('酒類販售資格')==='是'&&k('冷藏空間')==='是'&&k('Asahi是否覆蓋')==='否'&&k('DecisionMaker')!==''&&k('DecisionMaker')!=='尚未建立關係';
+    if(pass)return ['已確認願意 Pilot','有興趣'].includes(pilot)?'試點候選':'通過';
+    return ['目前酒類狀態','目前啤酒品牌','Asahi是否覆蓋','酒類販售資格','冷藏空間','DecisionMaker','Pilot意願'].some(k)?'查證中':'待查證';
+  };
   const getQualification=row=>window.asahiPoolQualification?.get({id:row.id,name:row.name})?.data||{};
   const known=value=>value!==undefined&&value!==null&&String(value).trim()!==''&&String(value).trim()!=='Unknown';
   const renderRows=()=>{
     const query=search.value.trim().toLowerCase();
-    const visible=rows.filter(row=>(!tierFilter.value||row.tier===tierFilter.value)&&`${row.name} ${row.type} ${row.city}`.toLowerCase().includes(query));
+    const visible=rows.filter(row=>(!tierFilter.value||row.tier===tierFilter.value)&&(!stageFilter.value||stageOf(getQualification(row))===stageFilter.value)&&`${row.name} ${row.type} ${row.city}`.toLowerCase().includes(query));
     body.replaceChildren();
     visible.forEach(row=>{
       const tr=document.createElement('tr');
+      const stageCell=document.createElement('td'),stageBadge=document.createElement('span'),stage=stageOf(getQualification(row));
+      stageBadge.className=`pool-stage-badge stage-${STAGES.indexOf(stage)}`;stageBadge.textContent=stage;stageCell.appendChild(stageBadge);
       const tier=document.createElement('td'),badge=document.createElement('span');
       badge.className=`pool-tier-badge tier-${row.tier.toLowerCase()}`;
       badge.textContent=tierLabels[row.tier];
@@ -580,20 +592,39 @@ function renderAsahiPool(){
       link.href=`${sourceBase}&range=A${row.sourceRow}`;
       link.target='_blank';link.rel='noopener noreferrer';link.textContent=`第 ${row.sourceRow} 列`;
       source.appendChild(link);
-      tr.append(tier,name,type,city,next,source);body.appendChild(tr);
+      tr.append(stageCell,tier,name,type,city,next,source);body.appendChild(tr);
     });
     empty.hidden=visible.length>0;
+    const board=document.getElementById('pool-pipeline-board');
+    if(board){
+      const scope=rows.filter(row=>row.tier==='A');
+      const stageCounts=Object.fromEntries(STAGES.map(name=>[name,0]));
+      scope.forEach(row=>{stageCounts[stageOf(getQualification(row))]+=1;});
+      board.replaceChildren();
+      STAGES.forEach((name,index)=>{
+        const card=document.createElement('button');
+        card.type='button';card.className=`pool-pipeline-stage stage-${index}${stageFilter.value===name?' active':''}`;
+        const label=document.createElement('span'),count=document.createElement('strong');
+        label.textContent=name;count.textContent=stageCounts[name];
+        card.append(label,count);
+        card.addEventListener('click',()=>{tierFilter.value='A';stageFilter.value=stageFilter.value===name?'':name;renderRows();});
+        board.appendChild(card);
+      });
+      const total=document.getElementById('pool-pipeline-total');
+      if(total)total.textContent=`A 級共 ${scope.length} 家`;
+    }
     const qualified=rows.filter(row=>qualificationFields.every(key=>known(getQualification(row)[key]))).length;
     resultCount.textContent=`顯示 ${visible.length} / ${rows.length} 家候選 · 已補齊酒類狀態 ${qualified} 家 · 快照 ${ASAHI_POOL_SNAPSHOT.capturedAt}`;
   };
   search.addEventListener('input',renderRows);
   tierFilter.addEventListener('change',renderRows);
+  stageFilter.addEventListener('change',renderRows);
   window.addEventListener('asahi-pool-qualification-updated',renderRows);
   document.getElementById('export-asahi-pool').addEventListener('click',()=>{
-    const headers=['初篩類別','客戶名稱','來源店型','城市','來源店號','試算表列','目前酒類狀態','目前啤酒品牌','Asahi是否覆蓋','酒類販售資格','冷藏空間','DecisionMaker','關係強度','Pilot意願','Qualification備註','下一步確認'];
+    const headers=['推進階段','初篩類別','客戶名稱','來源店型','城市','來源店號','試算表列','目前酒類狀態','目前啤酒品牌','Asahi是否覆蓋','酒類販售資格','冷藏空間','DecisionMaker','關係強度','Pilot意願','Qualification備註','下一步確認'];
     const csvRows=rows.map(row=>{
       const qualification=getQualification(row);
-      return [tierLabels[row.tier],row.name,row.type,row.city,row.id,row.sourceRow,...qualificationFields.map(key=>qualification[key]||'Unknown'),qualification.DecisionMaker||'Unknown',qualification['關係強度']||'Unknown',qualification['Pilot意願']||'Unknown',qualification['備註']||'','酒類資格、啤酒品牌、決策者、冷藏條件'];
+      return [stageOf(qualification),tierLabels[row.tier],row.name,row.type,row.city,row.id,row.sourceRow,...qualificationFields.map(key=>qualification[key]||'Unknown'),qualification.DecisionMaker||'Unknown',qualification['關係強度']||'Unknown',qualification['Pilot意願']||'Unknown',qualification['備註']||'','酒類資格、啤酒品牌、決策者、冷藏條件'];
     });
     const content=[headers,...csvRows].map(row=>row.map(value=>`"${String(value).replace(/"/g,'""')}"`).join(',')).join('\r\n');
     const blob=new Blob(['\uFEFF',content],{type:'text/csv;charset=utf-8'});
