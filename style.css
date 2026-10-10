@@ -1639,3 +1639,4 @@ body { background: var(--bg); color: var(--text); font-size: 14px; }
 .pipe-chip:hover{border-color:#1d4ed8}
 .pipe-gap-table{max-width:36rem}
 @media(max-width:900px){.pipe-board{grid-template-columns:1fr}.pipe-funnel-row{grid-template-columns:6rem 1fr 4rem}.pipe-funnel-row small{grid-column:1/-1}}
+.pipe-chip{color:#101828;flex:0 0 auto;line-height:1.4}
