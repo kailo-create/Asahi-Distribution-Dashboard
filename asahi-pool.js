@@ -532,6 +532,21 @@ const ASAHI_POOL_SNAPSHOT = {
   ]
 };
 
+const ASAHI_POOL_STAGES=['待查證','查證中','通過','試點候選','淘汰'];
+const ASAHI_POOL_CHECKS=['酒類販售資格','冷藏空間','Asahi是否覆蓋','DecisionMaker','Pilot意願'];
+function asahiPoolStageOf(q){
+  const known=value=>value!==undefined&&value!==null&&String(value).trim()!==''&&String(value).trim()!=='Unknown';
+  const k=key=>known(q[key])?String(q[key]).trim():'';
+  const pilot=k('Pilot意願');
+  if(k('酒類販售資格')==='否'||k('冷藏空間')==='否'||k('Asahi是否覆蓋')==='是'||k('目前酒類狀態')==='已有 Asahi'||['暫無意願','拒絕'].includes(pilot))return '淘汰';
+  const pass=k('酒類販售資格')==='是'&&k('冷藏空間')==='是'&&k('Asahi是否覆蓋')==='否'&&k('DecisionMaker')!==''&&k('DecisionMaker')!=='尚未建立關係';
+  if(pass)return ['已確認願意 Pilot','有興趣'].includes(pilot)?'試點候選':'通過';
+  return ['目前酒類狀態','目前啤酒品牌',...ASAHI_POOL_CHECKS].some(k)?'查證中':'待查證';
+}
+window.ASAHI_POOL_STAGES=ASAHI_POOL_STAGES;window.asahiPoolStageOf=asahiPoolStageOf;window.ASAHI_POOL_CHECKS=ASAHI_POOL_CHECKS;
+
+window.ASAHI_POOL_SNAPSHOT_ROWS=ASAHI_POOL_SNAPSHOT.rows.map(([sourceRow,id,name,type,city,tier])=>({sourceRow,id,name,type,city,tier}));
+
 function renderAsahiPool(){
   const body=document.getElementById('asahi-pool-table');
   if(!body)return;
@@ -553,15 +568,7 @@ function renderAsahiPool(){
   const sourceBase='https://docs.google.com/spreadsheets/d/1Ubzqq_EKfJ8TDvo7KEBRG4KV4anXROxScoZAhPfS2gA/edit?gid=808112332';
   const tierLabels={A:'A｜直接啤酒情境',B:'B｜餐飲搭餐優先',C:'C｜先確認場景'};
   const qualificationFields=['目前酒類狀態','目前啤酒品牌','Asahi是否覆蓋','酒類販售資格','冷藏空間'];
-  const STAGES=['待查證','查證中','通過','試點候選','淘汰'];
-  const stageOf=q=>{
-    const k=key=>known(q[key])?String(q[key]).trim():'';
-    const pilot=k('Pilot意願');
-    if(k('酒類販售資格')==='否'||k('冷藏空間')==='否'||k('Asahi是否覆蓋')==='是'||k('目前酒類狀態')==='已有 Asahi'||['暫無意願','拒絕'].includes(pilot))return '淘汰';
-    const pass=k('酒類販售資格')==='是'&&k('冷藏空間')==='是'&&k('Asahi是否覆蓋')==='否'&&k('DecisionMaker')!==''&&k('DecisionMaker')!=='尚未建立關係';
-    if(pass)return ['已確認願意 Pilot','有興趣'].includes(pilot)?'試點候選':'通過';
-    return ['目前酒類狀態','目前啤酒品牌','Asahi是否覆蓋','酒類販售資格','冷藏空間','DecisionMaker','Pilot意願'].some(k)?'查證中':'待查證';
-  };
+  const STAGES=window.ASAHI_POOL_STAGES,stageOf=window.asahiPoolStageOf;
   const getQualification=row=>window.asahiPoolQualification?.get({id:row.id,name:row.name})?.data||{};
   const known=value=>value!==undefined&&value!==null&&String(value).trim()!==''&&String(value).trim()!=='Unknown';
   const renderRows=()=>{
@@ -595,24 +602,6 @@ function renderAsahiPool(){
       tr.append(stageCell,tier,name,type,city,next,source);body.appendChild(tr);
     });
     empty.hidden=visible.length>0;
-    const board=document.getElementById('pool-pipeline-board');
-    if(board){
-      const scope=rows.filter(row=>row.tier==='A');
-      const stageCounts=Object.fromEntries(STAGES.map(name=>[name,0]));
-      scope.forEach(row=>{stageCounts[stageOf(getQualification(row))]+=1;});
-      board.replaceChildren();
-      STAGES.forEach((name,index)=>{
-        const card=document.createElement('button');
-        card.type='button';card.className=`pool-pipeline-stage stage-${index}${stageFilter.value===name?' active':''}`;
-        const label=document.createElement('span'),count=document.createElement('strong');
-        label.textContent=name;count.textContent=stageCounts[name];
-        card.append(label,count);
-        card.addEventListener('click',()=>{tierFilter.value='A';stageFilter.value=stageFilter.value===name?'':name;renderRows();});
-        board.appendChild(card);
-      });
-      const total=document.getElementById('pool-pipeline-total');
-      if(total)total.textContent=`A 級共 ${scope.length} 家`;
-    }
     const qualified=rows.filter(row=>qualificationFields.every(key=>known(getQualification(row)[key]))).length;
     resultCount.textContent=`顯示 ${visible.length} / ${rows.length} 家候選 · 已補齊酒類狀態 ${qualified} 家 · 快照 ${ASAHI_POOL_SNAPSHOT.capturedAt}`;
   };

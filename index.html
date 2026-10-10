@@ -4,7 +4,7 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="description" content="菜蟲農食 × Asahi Zero-Sugar Health Channel Opportunity Engine">
   <title>Asahi Zero-Sugar Channel Command Center</title>
-  <link rel="stylesheet" href="style.css?v=pipeline-stage-v1">
+  <link rel="stylesheet" href="style.css?v=pipeline-stage-v2">
 </head>
 <body>
 <header class="topbar">
@@ -14,6 +14,7 @@
 <nav class="pill-tabs" aria-label="主要導覽">
   <a class="active" href="#summary" aria-current="page">決策摘要</a>
   <a href="#asahi-pool">Asahi 客戶池初篩</a>
+  <a href="#asahi-pipeline">推進週會</a>
   <a href="#next-actions">下一步待辦</a>
   <a href="#analytics">機會分析</a>
   <a href="#customer-database">客戶資料</a>
@@ -108,11 +109,6 @@
       <strong>篩選邏輯</strong>
       <span>A/B/C 依店型與明確店名線索初分；候選須同時符合 `storeOperation=active`、`supplying=True`、`activeState≠dropped`，並排除員工餐、吧檯、活動／送樣、中央廚房等內部用途。</span>
     </div>
-    <div class="pool-pipeline">
-      <div class="pool-pipeline-head"><strong>A 級推進 Pipeline</strong><span id="pool-pipeline-total"></span></div>
-      <div id="pool-pipeline-board" class="pool-pipeline-board"></div>
-      <small>階段依 Qualification 自動判定：淘汰＝酒類資格或冷藏為「否」、Asahi 已覆蓋、或無意願；通過＝酒類資格、冷藏、決策者皆確認且 Asahi 未覆蓋；試點候選＝通過且有 Pilot 意願。付費試點需核准，不自動判定。點階段可篩選。</small>
-    </div>
     <div class="pool-table-tools">
       <input id="asahi-pool-search" type="search" placeholder="搜尋店名、店型或城市" aria-label="搜尋 Asahi 客戶池">
       <select id="asahi-pool-tier" aria-label="依初篩類別篩選">
@@ -134,6 +130,21 @@
       <div id="asahi-pool-empty" class="pool-empty" hidden>沒有符合篩選條件的候選店家。</div>
     </div>
     <p id="asahi-pool-result-count" class="pool-result-count" aria-live="polite"></p>
+  </section>
+  </div>
+
+  <div class="dashboard-page" data-page="asahi-pipeline" hidden>
+  <section id="asahi-pipeline" class="panel pipeline-panel">
+    <div class="panel-header"><div><p class="eyebrow">Asahi 零糖通路｜推進週會</p><h2>客戶池推進進度</h2><p class="subtext">階段由客戶池 Qualification 自動判定；資料基準日：<span id="pipe-date">—</span>。尚無啤酒用量或金額資料，本頁以店數表示潛力，不估公斤或營收。</p></div>
+      <select id="pipe-scope" aria-label="範圍"><option value="A">範圍：A 級（作戰核心）</option><option value="">範圍：全部候選</option></select></div>
+    <div id="pipe-kpis" class="pipe-kpis"></div>
+    <div class="pipe-grid">
+      <div><h3>推進漏斗</h3><table class="pipe-table"><thead><tr><th>階段</th><th>定義</th><th>店數</th><th>佔比</th></tr></thead><tbody id="pipe-funnel"></tbody></table></div>
+      <div><h3>卡關分析（尚未確認的關鍵資格）</h3><table class="pipe-table"><thead><tr><th>資格</th><th>未確認店數</th><th>已確認「否」</th></tr></thead><tbody id="pipe-gaps"></tbody></table></div>
+    </div>
+    <h3>店家作戰清單（依推進程度排序）</h3>
+    <table class="pipe-table"><thead><tr><th>階段</th><th>店家</th><th>城市</th><th>酒類資格</th><th>冷藏</th><th>Asahi 未覆蓋</th><th>決策者</th><th>Pilot 意願</th><th>下一步</th><th></th></tr></thead><tbody id="pipe-list"></tbody></table>
+    <p id="pipe-list-note" class="pool-result-count"></p>
   </section>
   </div>
 
@@ -233,7 +244,8 @@
 </main>
 <aside id="detail-drawer" class="drawer" aria-hidden="true"><button id="drawer-close" class="drawer-close" aria-label="Close">×</button><div id="drawer-content"></div></aside><div id="drawer-backdrop" class="drawer-backdrop"></div>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="dashboard.js?v=pipeline-stage-v1"></script>
-<script src="asahi-pool.js?v=pipeline-stage-v1"></script>
+<script src="dashboard.js?v=pipeline-stage-v2"></script>
+<script src="asahi-pool.js?v=pipeline-stage-v2"></script>
+<script src="asahi-pipeline.js?v=pipeline-stage-v2"></script>
 <script src="dashboard-tabs.js?v=run-ready-v14-five-pages"></script>
 </body></html>
