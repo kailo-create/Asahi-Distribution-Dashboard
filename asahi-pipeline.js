@@ -33,7 +33,7 @@ function renderAsahiPipeline(){
     if(!list.length){td.textContent='—';tr.appendChild(td);return;}
     const d=document.createElement('details'),sm=document.createElement('summary'),body=document.createElement('div');
     sm.textContent=`${list.length} 家`;body.className='pipe-names';body.textContent=list.map(r=>r.name).join('、');
-    d.append(sm,body);if(list.length<=6)d.open=true;td.appendChild(d);tr.appendChild(td);
+    d.append(sm,body);if(list.length<=40)d.open=true;td.appendChild(d);tr.appendChild(td);
   };
   const noteSync=text=>{el('pipe-sync-note').textContent=text;};
   const render=()=>{
