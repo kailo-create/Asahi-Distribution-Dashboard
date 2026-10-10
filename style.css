@@ -1612,3 +1612,9 @@ body { background: var(--bg); color: var(--text); font-size: 14px; }
 .pipe-table td.num{font-weight:700}
 .pipe-bar{height:8px;background:#eef2f6;border-radius:4px;overflow:hidden}.pipe-bar i{display:block;height:100%;background:#1d4ed8}
 @media(max-width:800px){.pipe-kpis{grid-template-columns:repeat(2,1fr)}.pipe-grid{grid-template-columns:1fr}.pipe-table{display:block;overflow-x:auto}}
+
+.pipe-kpis-3{grid-template-columns:repeat(3,1fr)}
+.pipe-week-head{margin:-4px 0 8px;color:#667085}
+.pipe-list-tools{display:flex;gap:16px;align-items:center;margin-bottom:8px}
+.pipe-table select{font:inherit;max-width:9rem}
+.pipe-pot{font-weight:700}.pipe-pot.hi{color:#067647}.pipe-pot.mid{color:#b54708}.pipe-pot.lo{color:#667085}

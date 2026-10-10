@@ -40,6 +40,8 @@ const POOL_QUAL_FIELDS = [
   { column: 'M', key: 'Pilot意願' },
   { column: 'N', key: '備註' }
 ];
+const POOL_WEEKLY_KEY = 'asahi-pool-weekly-v1';
+const POOL_WEEKLY_HEADERS = ['本週目標行動','本週完成','目標週別'];
 let poolGoogleAccessToken = null;
 let poolGoogleEmail = '';
 let poolSheetRowsById = new Map();
@@ -276,12 +278,20 @@ function expectedPoolHeadersMatch(headers){
 }
 async function refreshPoolSharedQualification(){
   setPoolSyncStatus('正在從共用表載入 Qualification…','busy');
-  const range=encodeURIComponent(`'${POOL_SHEET_NAME}'!A1:P`);
+  const range=encodeURIComponent(`'${POOL_SHEET_NAME}'!A1:S`);
   const result=await poolApiRequest(`https://sheets.googleapis.com/v4/spreadsheets/${POOL_SHEET_ID}/values/${range}`);
   const values=result.values||[];
   if(!expectedPoolHeadersMatch(values[0]||[]))throw new Error('共用表欄位標題不符合預期；為避免錯寫資料，已停止同步。');
   const rowsById=new Map();
   const sheetRecords=[];
+  const weeklyHeadersReady=POOL_WEEKLY_HEADERS.every((header,index)=>(values[0]||[])[16+index]===header);
+  if(!weeklyHeadersReady){
+    const headerRange=encodeURIComponent(`'${POOL_SHEET_NAME}'!Q1:S1`);
+    await poolApiRequest(`https://sheets.googleapis.com/v4/spreadsheets/${POOL_SHEET_ID}/values/${headerRange}?valueInputOption=RAW`,{
+      method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({majorDimension:'ROWS',values:[POOL_WEEKLY_HEADERS]})
+    });
+  }
+  const weekly=loadPoolWeekly();
   values.slice(1).forEach((row,index)=>{
     const id=String(row[0]||'').trim();
     if(!id){
@@ -294,6 +304,10 @@ async function refreshPoolSharedQualification(){
     if(!customerName)throw new Error(`共用表第 ${index+2} 列缺少客戶名稱；為避免錯配，已停止同步。`);
     const key=asahiPoolQualificationKey(id,customerName);
     sheetRecords.push({row,key,id});
+    if(weeklyHeadersReady){
+      const action=String(row[16]||'').trim(),done=String(row[17]||'').trim().toUpperCase()==='TRUE',week=String(row[18]||'').trim();
+      if(action||week||done)weekly[id]={action,done,week};
+    }
   });
   if(!rowsById.size)throw new Error('共用表沒有任何客戶資料列。');
   const localQualifications=loadQual();
@@ -307,10 +321,31 @@ async function refreshPoolSharedQualification(){
     localQualifications[key]=merged;
   });
   localStorage.setItem(STORAGE_KEY,JSON.stringify(localQualifications));
+  localStorage.setItem(POOL_WEEKLY_KEY,JSON.stringify(weekly));
   poolSheetRowsById=rowsById;
   window.dispatchEvent(new CustomEvent('asahi-pool-qualification-updated'));
   setPoolSyncStatus(`已連線 ${poolGoogleEmail} · 載入 ${rowsById.size} 家 · ${new Date().toLocaleTimeString('zh-TW')}`,'success');
 }
+function loadPoolWeekly(){
+  try{return JSON.parse(localStorage.getItem(POOL_WEEKLY_KEY)||'{}')||{};}catch(error){return {};}
+}
+async function setPoolWeekly(customerId,patch){
+  const all=loadPoolWeekly();
+  const next={action:'',done:false,week:'',...(all[customerId]||{}),...patch};
+  if(!next.week&&!next.action)next.done=false;
+  all[customerId]=next;
+  localStorage.setItem(POOL_WEEKLY_KEY,JSON.stringify(all));
+  window.dispatchEvent(new CustomEvent('asahi-pool-weekly-updated'));
+  const row=poolSheetRowsById.get(String(customerId));
+  if(!poolGoogleAccessToken||!row)return {synced:false};
+  const range=encodeURIComponent(`'${POOL_SHEET_NAME}'!Q${row}:S${row}`);
+  await poolApiRequest(`https://sheets.googleapis.com/v4/spreadsheets/${POOL_SHEET_ID}/values/${range}?valueInputOption=RAW`,{
+    method:'PUT',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({majorDimension:'ROWS',values:[[next.action,next.done?'TRUE':'',next.week]]})
+  });
+  return {synced:true};
+}
+window.asahiPoolWeekly={all:loadPoolWeekly,set:setPoolWeekly};
 async function savePoolSharedQualification(customerId,qualification){
   const row=poolSheetRowsById.get(customerId);
   if(!row)throw new Error('共用表中找不到此店號；請先重新載入共用資料。');
