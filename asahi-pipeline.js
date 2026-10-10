@@ -59,13 +59,27 @@ function renderAsahiPipeline(){
     });
 
     el('pipe-kpis').replaceChildren(...[['範圍店數',total],['已開始查證',total-count('待查證')],['通過',count('通過')],['試點候選',count('試點候選')],['淘汰',count('淘汰')]].map(kpi));
+    const reached=[total,total-count('待查證'),count('通過')+count('試點候選'),count('試點候選')];
+    const labels=['範圍店數','已開始查證','通過資格','試點候選'];
     const funnel=el('pipe-funnel');funnel.replaceChildren();
+    reached.forEach((n,i)=>{
+      const row=document.createElement('div'),label=document.createElement('span'),bar=document.createElement('div'),fill=document.createElement('i'),num=document.createElement('strong'),conv=document.createElement('small');
+      row.className='pipe-funnel-row';label.textContent=labels[i];bar.className='pipe-funnel-bar';
+      fill.style.width=`${total?Math.max(n/total*100,n?2:0):0}%`;fill.className=`f${i}`;bar.appendChild(fill);
+      num.textContent=`${n} 家`;
+      conv.textContent=i===0?'100%':`佔範圍 ${total?(n/total*100).toFixed(1):0}%｜較上一層 ${reached[i-1]?(n/reached[i-1]*100).toFixed(1):'—'}%`;
+      row.append(label,bar,num,conv);funnel.appendChild(row);
+    });
+    const dropped=document.createElement('div');dropped.className='pipe-funnel-drop';dropped.textContent=`淘汰：${count('淘汰')} 家（資格為否、Asahi 已覆蓋或無意願，不計入漏斗各層）`;funnel.appendChild(dropped);
+    const board=el('pipe-board');board.replaceChildren();
     STAGES.forEach((name,i)=>{
-      const tr=document.createElement('tr'),n=count(name),pct=total?n/total*100:0;
-      const s=document.createElement('td'),badge=document.createElement('span');badge.className=`pool-stage-badge stage-${i}`;badge.textContent=name;s.appendChild(badge);tr.appendChild(s);
-      cell(tr,defs[name]);cell(tr,String(n),'num');
-      const share=document.createElement('td'),bar=document.createElement('div'),fill=document.createElement('i'),label=document.createElement('small');
-      bar.className='pipe-bar';fill.style.width=`${pct}%`;label.textContent=`${pct.toFixed(1)}%`;bar.appendChild(fill);share.append(bar,label);tr.appendChild(share);namesCell(tr,rows.filter(r=>r.stage===name));funnel.appendChild(tr);
+      const col=document.createElement('section'),head=document.createElement('header'),h=document.createElement('strong'),n=document.createElement('span'),d=document.createElement('small'),chips=document.createElement('div');
+      const list=rows.filter(r=>r.stage===name);
+      col.className=`pipe-col stage-${i}`;h.textContent=name;n.textContent=`${list.length} 家`;d.textContent=defs[name];
+      head.append(h,n,d);chips.className='pipe-chips';
+      if(!list.length){const e=document.createElement('em');e.textContent='目前沒有店家';chips.appendChild(e);}
+      list.forEach(r=>{const c=document.createElement('button');c.type='button';c.className='pipe-chip';c.title=`${r.type||'店型未填'}｜${r.city||''}`;c.textContent=r.name;c.addEventListener('click',()=>window.asahiPoolQualification?.open(r));chips.appendChild(c);});
+      col.append(head,chips);board.appendChild(col);
     });
     const gaps=el('pipe-gaps');gaps.replaceChildren();
     const live=rows.filter(r=>r.stage!=='淘汰');
